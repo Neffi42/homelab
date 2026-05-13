@@ -1,0 +1,5 @@
+[tools]
+flux2 = "latest"
+kubectl = "latest"
+"npm:yaml-language-server" = "latest"
+prettier = "latest"

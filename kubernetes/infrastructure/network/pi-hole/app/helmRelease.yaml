@@ -1,0 +1,103 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: pi-hole
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: pi-hole
+  interval: 1h
+  values:
+    controllers:
+      pi-hole:
+        strategy: RollingUpdate
+        pod:
+          nodeSelector:
+            kubernetes.io/hostname: oliver
+        containers:
+          app:
+            image:
+              repository: docker.io/pihole/pihole
+              tag: 2026.04.1
+            restartPolicy: Always
+            env:
+              TZ: Europe/Paris
+              FTLCONF_dns_listeningMode: ALL
+            envFrom:
+              - secretRef:
+                  name: pi-hole-credentials
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &httpPort 80
+                    path: /admin/login
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+                  - SYS_NICE
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+    service:
+      pi-hole:
+        controller: pi-hole
+        ports:
+          http:
+            port: *httpPort
+      dns-udp:
+        controller: pi-hole
+        ports:
+          dns:
+            port: &dnsPort 53
+            protocol: UDP
+      dns-tcp:
+        controller: pi-hole
+        ports:
+          dns:
+            port: *dnsPort
+            protocol: TCP
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        globalMounts:
+          - path: /etc/pihole
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "pi-hole.neffi.fr"
+        parentRefs: &gateway
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: pi-hole
+                port: *httpPort
+      udp:
+        kind: UDPRoute
+        parentRefs: *gateway
+        rules:
+          - backendRefs:
+              - name: pi-hole-dns-udp
+                port: *dnsPort
+      tcp:
+        kind: TCPRoute
+        parentRefs: *gateway
+        rules:
+          - backendRefs:
+              - name: pi-hole-dns-tcp
+                port: *dnsPort

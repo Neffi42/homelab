@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: neffi-fr-cert
+spec:
+  secretName: neffi-fr-tls
+  issuerRef:
+    name: le-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.neffi.fr"
+    - "neffi.fr"

@@ -1,0 +1,75 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: private
+spec:
+  gatewayClassName: envoy-gateway
+  addresses:
+    - type: IPAddress
+      value: "100.110.121.73"
+    - type: IPAddress
+      value: "fd7a:115c:a1e0::6601:794f"
+  listeners:
+    - name: https
+      hostname: "*.neffi.fr"
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: "neffi-fr-tls"
+    - name: dns-udp
+      protocol: UDP
+      port: 53
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: dns-tcp
+      protocol: TCP
+      port: 53
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: public
+spec:
+  gatewayClassName: envoy-gateway
+  addresses:
+    - type: IPAddress
+      value: "192.168.1.42"
+  listeners:
+    - name: https
+      hostname: "*.neffi.fr"
+      protocol: HTTPS
+      port: 4443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: "neffi-fr-tls"
+    - name: ssh
+      protocol: TCP
+      port: 2222
+      allowedRoutes:
+        kinds:
+          - kind: TCPRoute
+        namespaces:
+          from: Selector
+          selector:
+            matchLabels:
+              kubernetes.io/metadata.name: forgejo

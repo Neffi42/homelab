@@ -1,0 +1,34 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: cert-manager-config
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: cert-manager-webhook-ovh
+      version: "0.9.9"
+      sourceRef:
+        kind: HelmRepository
+        name: cert-manager-config
+  values:
+    groupName: acme.neffi.fr
+    certManager:
+      namespace: network
+      serviceAccountName: cert-manager
+    issuers:
+      - name: le-prod
+        create: true
+        kind: ClusterIssuer
+        cnameStrategy: None
+        acmeServerUrl: https://acme-v02.api.letsencrypt.org/directory
+        email: me@neffi.fr
+        ovhEndpointName: ovh-eu
+        ovhAuthenticationMethod: oauth2
+        ovhAuthenticationRef:
+          oauth2ClientIDRef:
+            name: ovh-credentials
+            key: oauth2ClientID
+          oauth2ClientSecretRef:
+            name: ovh-credentials
+            key: oauth2ClientSecret

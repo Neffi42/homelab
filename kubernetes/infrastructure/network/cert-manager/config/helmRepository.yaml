@@ -1,0 +1,7 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: cert-manager-config
+spec:
+  interval: 24h
+  url: https://aureq.github.io/cert-manager-webhook-ovh/

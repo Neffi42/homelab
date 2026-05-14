@@ -1,0 +1,30 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  deletionPolicy: WaitForTermination
+  interval: 1h
+  path: ./kubernetes/infrastructure/
+  prune: true
+  wait: false
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  patches:
+    - # Add Kustomization defaults for all child Kustomizations
+      patch: |-
+        apiVersion: kustomize.toolkit.fluxcd.io/v1
+        kind: Kustomization
+        metadata:
+          name: _
+        spec:
+          interval: 1h
+          prune: true
+          wait: false
+      target:
+        group: kustomize.toolkit.fluxcd.io
+        kind: Kustomization

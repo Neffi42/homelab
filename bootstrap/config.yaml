@@ -1,0 +1,12 @@
+write-kubeconfig-group: sudo
+disable:
+  - traefik
+  - local-storage
+tls-san:
+  - oliver
+  - oliver.tailcb1670.ts.net
+  - oliver.neffi.fr
+  - pub.neffi.fr
+  - "100.110.121.73"
+  - "fd7a:115c:a1e0::6601:794f"
+  - "192.168.1.42"

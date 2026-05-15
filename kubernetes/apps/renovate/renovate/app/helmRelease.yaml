@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: renovate
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: renovate
+  interval: 1h
+  values:
+    controllers:
+      renovate:
+        type: cronjob
+        pod:
+          nodeSelector:
+            kubernetes.io/hostname: oliver
+        cronjob:
+          schedule: "@hourly"
+          concurrencyPolicy: Forbid
+          successfulJobsHistory: 3
+          failedJobsHistory: 1
+        containers:
+          renovate:
+            image:
+              repository: renovate/renovate
+              tag: 43.168
+            restartPolicy: Always
+            env:
+              TZ: Europe/Paris
+              LOG_LEVEL: debug
+              RENOVATE_BASE_DIR: "/tmp/renovate/"
+              RENOVATE_PR_HOURLY_LIMIT: "15"
+            envFrom:
+              - secretRef:
+                  name: renovate-credentials
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+    persistence:
+      work-volume:
+        enabled: true
+        type: emptyDir
+        advancedMounts:
+          renovate:
+            renovate:
+              - path: /tmp/renovate/

@@ -6,8 +6,6 @@ metadata:
   name: external-secrets
   namespace: flux-system
 spec:
-  dependsOn:
-    - name: cert-manager-config
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
@@ -31,7 +29,6 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: cert-manager-config
     - name: external-secrets
   healthChecks:
     - apiVersion: external-secrets.io/v1

@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./helmRepository.yaml
   - ./operator.yaml
+  - ./cluster.yaml

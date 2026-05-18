@@ -48,3 +48,13 @@ variable "ovh_target_ip" {
   description = "The targeted ip address by ovh records"
   type        = string
 }
+
+variable "manual_dns_entries" {
+  description = "Manual DNS entries to create"
+  type = map(object({
+    subdomain = string
+    target_ip = string
+    provider  = string
+  }))
+  default = {}
+}

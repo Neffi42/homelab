@@ -1,0 +1,10 @@
+:80 {
+	encode gzip
+	file_server {
+		root /data
+		index index.html
+	}
+	header Cache-Control "public, max-age=3600"
+	header X-Content-Type-Options "nosniff"
+	header X-Frame-Options "DENY"
+}

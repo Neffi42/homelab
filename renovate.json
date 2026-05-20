@@ -1,3 +1,23 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:enableMajor",
+    ":disableRateLimiting",
+    ":dependencyDashboard",
+    ":semanticCommits",
+    ":timezone(Europe/Paris)"
+  ],
+  "dependencyDashboardTitle": "Renovate Dashboard",
+  "suppressNotifications": ["prEditedNotification", "prIgnoreNotification"],
+  "ignorePaths": [],
+  "flux": {
+    "fileMatch": ["\\.yaml(?:\\.j2)?$"]
+  },
+  "helm-values": {
+    "fileMatch": ["\\.yaml(?:\\.j2)?$"]
+  },
+  "kubernetes": {
+    "fileMatch": ["\\.yaml(?:\\.j2)?$"]
+  }
 }

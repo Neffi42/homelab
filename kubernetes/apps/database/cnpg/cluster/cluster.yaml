@@ -16,3 +16,11 @@ spec:
       owner: app
       secret:
         name: app-db-credentials
+  managed:
+    roles:
+      - name: ferdium
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: ferdium-credentials

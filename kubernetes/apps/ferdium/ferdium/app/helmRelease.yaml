@@ -1,0 +1,144 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ferdium
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ferdium
+  interval: 1h
+  values:
+    controllers:
+      ferdium:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: docker.io/ferdium/ferdium-server
+              tag: 2.0.13
+            restartPolicy: Always
+            env:
+              - name: TZ
+                value: Europe/Paris
+              - name: APP_URL
+                value: "https://feridum.neffi.fr"
+              - name: NODE_ENV
+                value: production
+              - name: CONNECT_WITH_FRANZ
+                value: "false"
+              - name: MAIL_CONNECTION
+                value: ""
+              - name: JWT_USE_PEM
+                value: "true"
+              - name: IS_DASHBOARD_ENABLED
+                value: "true"
+              - name: IS_CREATION_ENABLED
+                value: "true"
+              - name: IS_REGISTRATION_ENABLED
+                value: "true"
+              - name: DB_CONNECTION
+                value: "pg"
+              - name: DB_HOST
+                value: &dbHost "cnpg-cluster-rw.database.svc.cluster.local"
+              - name: DB_PORT
+                value: &dbPort "5432"
+              - name: DB_SSL
+                value: "false"
+              - name: DB_DATABASE
+                value: &dbName ferdium
+              - name: DB_USER
+                value: &dbUser ferdium
+            envFrom:
+              - secretRef:
+                  name: &dbSecret ferdium-credentials
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &httpPort 3333
+                    path: /
+                  initialDelaySeconds: 30
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+      db-patcher:
+        type: job
+        annotations:
+          helm.sh/hook: post-install,post-upgrade
+          helm.sh/hook-delete-policy: before-hook-creation
+        containers:
+          patcher:
+            image:
+              repository: docker.io/postgres
+              tag: 16-alpine
+            command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Waiting for Ferdium to run database migrations..."
+                until psql -c '\d users' > /dev/null 2>&1; do
+                  sleep 5
+                done
+                echo "Table found. Applying schema patch..."
+                psql -c 'ALTER TABLE users ALTER COLUMN password TYPE VARCHAR(254), ALTER COLUMN password SET NOT NULL;'
+                echo "Patch applied successfully. Exiting cleanly."
+            env:
+              - name: PGHOST
+                value: *dbHost
+              - name: PGPORT
+                value: *dbPort
+              - name: PGDATABASE
+                value: *dbName
+              - name: PGUSER
+                value: *dbUser
+              - name: PGPASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: *dbSecret
+                    key: DB_PASSWORD
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 64Mi
+    service:
+      ferdium:
+        controller: ferdium
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 100Mi
+        advancedMounts:
+          ferdium:
+            app:
+              - path: /data
+                subPath: data
+              - path: /app/build/recipes
+                subPath: recipes
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "ferdium.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: ferdium
+                port: *httpPort

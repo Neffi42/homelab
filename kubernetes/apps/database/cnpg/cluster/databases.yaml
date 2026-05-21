@@ -1,0 +1,11 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: ferdium
+spec:
+  cluster:
+    name: cnpg-cluster
+  name: ferdium
+  owner: ferdium
+  ensure: present

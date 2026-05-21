@@ -34,8 +34,8 @@ spec:
     - name: longhorn-config
     - name: cnpg-operator
   healthChecks:
-    - apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
       name: cnpg-cluster
       namespace: database
   interval: 1h

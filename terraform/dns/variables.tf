@@ -4,12 +4,6 @@ variable "domain" {
   default     = "neffi.fr"
 }
 
-variable "kube_config_path" {
-  description = "The path to the kubeconfig to use"
-  type        = string
-  default     = "~/.kube/config"
-}
-
 variable "pihole_url" {
   description = "The URL of the Pi-hole instance"
   type        = string

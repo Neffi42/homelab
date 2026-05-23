@@ -15,10 +15,11 @@ terraform {
       version = "2.13.1"
     }
   }
-}
 
-provider "kubernetes" {
-  config_path = var.kube_config_path
+  backend "kubernetes" {
+    secret_suffix = "dns"
+    namespace     = "terraform"
+  }
 }
 
 provider "pihole" {

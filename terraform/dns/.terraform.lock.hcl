@@ -5,6 +5,7 @@ provider "registry.terraform.io/hashicorp/kubernetes" {
   version     = "3.1.0"
   constraints = "3.1.0"
   hashes = [
+    "h1:G9QqKNpcztBRqrywtlNylFJSpGzDfRFtO8hcWLdkvRY=",
     "h1:oodIAuFMikXNmEtil5MQgP4dfSctUBYQiGJfjbsF3NY=",
     "zh:0215c5c60be62028c09a2f22458e89cda3ef5830a632299f1d401eb3538874b0",
     "zh:09ebb9f442431e278a310a9423f32caf467cb4b3cad3fe59573ca71fa7b14e20",
@@ -26,6 +27,7 @@ provider "registry.terraform.io/ovh/ovh" {
   constraints = "2.13.1"
   hashes = [
     "h1:+fNUfSFsSaMRXwD8coYbviVPy3YYgQum5rUf2Dc34Mg=",
+    "h1:5+GNM1C0OeCnCjtywy5XIrBIAkIrwDC3HbhirdWRF9o=",
     "zh:1bae41534b6e16fdfb5e01a545cac1531c89f070f2c73203d078bca781111974",
     "zh:45620e5e8acb295d175891bca1bf47a707072b6922a6c9bbe161da3eb59810b6",
     "zh:498a8708a7553113c065e34dcc844aef7163ffb02c90da22350ed74f35de194d",
@@ -47,6 +49,7 @@ provider "registry.terraform.io/ryanwholey/pihole" {
   constraints = "2.0.0-beta.1"
   hashes = [
     "h1:BGHku+l3aJfWtjE0kA0nY8LnYc87aMvHSCI830kLcgQ=",
+    "h1:u1I9C4k4xTnM2ngeqnDuNxrUQaqWqujP3hwhPrAo9sw=",
     "zh:02b61dfbdf0729b8fc4078cedd883334ae5a5360999e6c74255a3a55d5e7b1fd",
     "zh:0e7502067463236fd68ea558b6a68d5b37e2d3eea4e52355e2db46de78896402",
     "zh:1335a746f4b9507103c067fb72854db42426cd1503ff18f803c040555d64c172",

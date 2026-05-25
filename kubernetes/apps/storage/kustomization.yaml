@@ -4,5 +4,4 @@ kind: Kustomization
 
 resources:
   - ./namespace.yaml
-  - ./longhorn/ks.yaml
   - ./local-path/ks.yaml

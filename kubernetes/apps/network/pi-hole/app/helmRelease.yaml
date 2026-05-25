@@ -8,6 +8,8 @@ spec:
     kind: OCIRepository
     name: pi-hole
   interval: 1h
+  driftDetection:
+    mode: enabled
   values:
     controllers:
       pi-hole:

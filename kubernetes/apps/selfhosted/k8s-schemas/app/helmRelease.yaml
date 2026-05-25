@@ -10,37 +10,6 @@ spec:
   interval: 1h
   values:
     controllers:
-      k8s-schemas-generator:
-        type: cronjob
-        cronjob:
-          backoffLimit: 0
-          concurrencyPolicy: Replace
-          schedule: "0 */4 * * *" # Every 4 hours
-          successfulJobsHistory: 0
-          failedJobsHistory: 1
-        containers:
-          app:
-            image:
-              repository: ghcr.io/bjw-s-labs/k8s-crd-extractor
-              tag: 2026.3.11@sha256:a26844ff81905a8fac4dba61b416bed087a1944e20e38634acba5a7f65eeac93
-            command:
-              - /usr/bin/catatonit
-              - --
-              - sh
-            args:
-              - -c
-              - /app/crd-extractor.sh && exec sh /config/map/generate-index.sh
-            resources:
-              requests:
-                cpu: 10m
-                memory: 128Mi
-              limits:
-                memory: 2Gi
-            securityContext:
-              allowPrivilegeEscalation: false
-              readOnlyRootFilesystem: true
-              capabilities: { drop: [ALL] }
-
       k8s-schemas-server:
         type: deployment
         replicas: 1
@@ -76,11 +45,43 @@ spec:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
 
+      k8s-schemas-generator:
+        type: cronjob
+        cronjob:
+          backoffLimit: 2
+          concurrencyPolicy: Forbid
+          schedule: "0 */4 * * *"
+          successfulJobsHistory: 0
+          failedJobsHistory: 1
+          startingDeadlineSeconds: 60
+        containers:
+          app:
+            image:
+              repository: ghcr.io/bjw-s-labs/k8s-crd-extractor
+              tag: 2026.3.11@sha256:a26844ff81905a8fac4dba61b416bed087a1944e20e38634acba5a7f65eeac93
+            command:
+              - /usr/bin/catatonit
+              - --
+              - sh
+            args:
+              - -c
+              - /app/crd-extractor.sh && exec sh /config/map/generate-index.sh
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                memory: 2Gi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: [ALL] }
+
     persistence:
       schemas:
         type: persistentVolumeClaim
-        storageClass: hdd
-        accessMode: ReadWriteMany
+        storageClass: local-path-pi
+        accessMode: ReadWriteOnce
         size: 1Gi
         advancedMounts:
           k8s-schemas-generator:
@@ -92,6 +93,7 @@ spec:
               - path: /data
                 subPath: crdSchemas
                 readOnly: true
+
       tmpfs:
         type: emptyDir
         advancedMounts:
@@ -103,6 +105,7 @@ spec:
             caddy:
               - path: /tmp
                 subPath: caddy-tmp
+
       config:
         type: configMap
         name: k8s-schemas

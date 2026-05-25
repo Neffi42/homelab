@@ -5,4 +5,4 @@ resources:
   - rbac.yaml
   - deployment.yaml
   - configmap.yaml
-  - storageclasses.yaml
+  - storageClasses.yaml

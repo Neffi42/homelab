@@ -8,6 +8,8 @@ spec:
     kind: OCIRepository
     name: ferdium
   interval: 1h
+  driftDetection:
+    mode: enabled
   values:
     controllers:
       ferdium:

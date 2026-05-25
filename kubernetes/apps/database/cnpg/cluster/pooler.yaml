@@ -1,0 +1,42 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/postgresql.cnpg.io/pooler_v1.json
+apiVersion: postgresql.cnpg.io/v1
+kind: Pooler
+metadata:
+  name: cnpg-pooler-rw
+  namespace: database
+spec:
+  cluster:
+    name: cnpg-cluster
+  type: rw
+  instances: 1
+  pgbouncer:
+    poolMode: transaction
+    parameters:
+      max_client_conn: "200"
+      default_pool_size: "20"
+      reserve_pool_size: "5"
+      reserve_pool_timeout: "3"
+  template:
+    metadata:
+      labels:
+        app: cnpg-pooler
+    spec:
+      containers:
+        - name: pgbouncer
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - oliver

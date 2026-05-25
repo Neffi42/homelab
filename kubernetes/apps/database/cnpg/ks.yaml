@@ -38,6 +38,10 @@ spec:
       kind: Cluster
       name: cnpg-cluster
       namespace: database
+    - apiVersion: postgresql.cnpg.io/v1
+      kind: Pooler
+      name: cnpg-pooler-rw
+      namespace: database
   interval: 1h
   path: ./kubernetes/apps/database/cnpg/cluster
   prune: true

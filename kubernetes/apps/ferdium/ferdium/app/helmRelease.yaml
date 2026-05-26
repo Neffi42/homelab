@@ -62,10 +62,10 @@ spec:
                   httpGet:
                     port: &httpPort 3333
                     path: /
-                  initialDelaySeconds: 30
-                  periodSeconds: 10
+                  initialDelaySeconds: 120
+                  periodSeconds: 15
                   timeoutSeconds: 1
-                  failureThreshold: 3
+                  failureThreshold: 10
               readiness: *probe
             resources:
               requests:

@@ -1,0 +1,33 @@
+server:
+  externalUrl: "https://cloud.neffi.fr"
+  database: "/db/database.db"
+  sources:
+    - path: /files
+      config:
+        defaultEnabled: true
+
+http:
+  trustedHeaders:
+    - X-Forwarded-For
+    - X-Real-IP
+  disableRateLimit: false
+
+frontend:
+  name: "My Cloud"
+
+auth:
+  methods:
+    password:
+      enabled: false
+    oidc:
+      enabled: true
+      issuerUrl: "https://auth.neffi.fr"
+      scopes: "email openid profile urn:zitadel:iam:org:project:roles"
+      userIdentifier: "email"
+      createUser: true
+      adminGroup: "admin"
+      groupsClaim: "urn:zitadel:iam:org:project:roles"
+
+userDefaults:
+  permissions:
+    api: true

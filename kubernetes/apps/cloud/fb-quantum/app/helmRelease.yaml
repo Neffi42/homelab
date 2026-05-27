@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: fb-quantum
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: fb-quantum
+  interval: 1h
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      fb-quantum:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: docker.io/gtstef/filebrowser
+              tag: stable@sha256:eb3733681db8757412632c61a99ad656f0d94ed6781bb2ea114b4d70babab78c
+            restartPolicy: Always
+            env:
+              - name: TZ
+                value: Europe/Paris
+            envFrom:
+              - secretRef:
+                  name: fb-quantum-credentials
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &httpPort 80
+                    path: /health
+                  initialDelaySeconds: 10
+                  periodSeconds: 30
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        storageClass: local-path-oliver-ssd
+        size: 200Gi
+        globalMounts:
+          - path: /files
+            subPath: files
+          - path: /db
+            subPath: db
+      config:
+        type: configMap
+        name: fb-quantum
+        globalMounts:
+          - path: /home/filebrowser/data
+            readOnly: true
+    service:
+      fb-quantum:
+        controller: fb-quantum
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "cloud.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: fb-quantum
+                port: *httpPort

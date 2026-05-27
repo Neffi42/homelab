@@ -33,3 +33,9 @@ spec:
         superuser: false
         passwordSecret:
           name: zitadel-credentials
+      - name: forgejo
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: forgejo-credentials

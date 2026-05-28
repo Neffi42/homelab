@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/helmrelease-helm-v2beta2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dragonfly
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: dragonfly
+      version: "v1.38.0"
+      sourceRef:
+        kind: HelmRepository
+        name: dragonfly
+  values:
+    extraArgs:
+      - --admin_bind=0.0.0.0
+      - --maxmemory=$(MAX_MEMORY)Mi
+      - --cluster_mode=emulated
+      - --proactor_threads=2
+      - --lock_on_hashtags
+
+    storage:
+      enabled: true
+      storageClassName: local-path-oliver
+
+    resources:
+      requests:
+        cpu: 100m
+      limits:
+        memory: 512Mi
+
+    env:
+      - name: MAX_MEMORY
+        valueFrom:
+          resourceFieldRef:
+            resource: limits.memory
+            divisor: 1Mi

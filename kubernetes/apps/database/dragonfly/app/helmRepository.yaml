@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/helmrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: dragonfly
+spec:
+  type: oci
+  interval: 24h
+  url: oci://ghcr.io/dragonflydb/dragonfly/helm

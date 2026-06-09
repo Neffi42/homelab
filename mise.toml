@@ -2,7 +2,7 @@
 flux2 = "latest"
 kubectl = "latest"
 "npm:yaml-language-server" = "latest"
-prettier = "latest"
+oxfmt = "latest"
 terraform = "latest"
 terraform-ls = "latest"
 

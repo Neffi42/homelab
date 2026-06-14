@@ -21,7 +21,7 @@ spec:
           app:
             image:
               repository: docker.io/pihole/pihole
-              tag: 2026.05.0
+              tag: 2026.06.0
             restartPolicy: Always
             env:
               TZ: Europe/Paris

@@ -36,18 +36,3 @@ allowedTopologies:
           - oliver
 parameters:
   nodePath: /mnt/fab/k3s
----
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: local-path-oliver-hdd
-provisioner: rancher.io/local-path
-volumeBindingMode: WaitForFirstConsumer
-reclaimPolicy: Delete
-allowedTopologies:
-  - matchLabelExpressions:
-      - key: kubernetes.io/hostname
-        values:
-          - oliver
-parameters:
-  nodePath: /mnt/nabil/k3s

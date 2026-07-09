@@ -29,5 +29,5 @@ spec:
       media:
         enabled: true
         accessMode: ReadWriteOnce
-        storageClass: local-path-oliver-hdd
+        storageClass: local-path-oliver-ssd
         readOnly: true

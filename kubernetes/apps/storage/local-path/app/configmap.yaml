@@ -15,10 +15,6 @@ data:
             {
                     "node": "oliver",
                     "paths":["/var/lib/rancher/k3s/storage", "/mnt/fab/k3s", "/mnt/nabil/k3s"]
-            },
-            {
-                    "node": "raspberrypi",
-                    "paths":["/var/lib/rancher/k3s/storage"]
             }
             ]
     }

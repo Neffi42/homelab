@@ -80,7 +80,6 @@ spec:
     persistence:
       schemas:
         type: persistentVolumeClaim
-        storageClass: local-path-pi
         accessMode: ReadWriteOnce
         size: 1Gi
         advancedMounts:

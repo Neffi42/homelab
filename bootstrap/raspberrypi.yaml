@@ -1,0 +1,6 @@
+write-kubeconfig-group: sudo
+tls-san:
+  - raspberrypi
+  - raspberrypi.tailcb1670.ts.net
+  - "100.111.148.46"
+  - "fd7a:115c:a1e0::5301:943a"

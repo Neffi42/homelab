@@ -1,4 +1,7 @@
 write-kubeconfig-group: sudo
+disable:
+  - traefik
+  - local-storage
 tls-san:
   - raspberrypi
   - raspberrypi.tailcb1670.ts.net

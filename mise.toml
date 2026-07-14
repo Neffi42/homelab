@@ -5,7 +5,3 @@ kubectl = "latest"
 oxfmt = "latest"
 terraform = "latest"
 terraform-ls = "latest"
-
-[env]
-KUBECONFIG = "$HOME/.kube/config"
-KUBE_CONFIG_PATH = "$HOME/.kube/config"

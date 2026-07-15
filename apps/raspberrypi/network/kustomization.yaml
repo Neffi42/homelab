@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ../../base/network
   - ../../base/network/gateway-api-crds
+  - ./cert-manager/ks.yaml

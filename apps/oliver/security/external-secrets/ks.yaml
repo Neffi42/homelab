@@ -12,7 +12,7 @@ spec:
       name: external-secrets
       namespace: security
   interval: 1h
-  path: "./apps/oliver/security/external-secrets/app"
+  path: "./apps/base/security/external-secrets"
   prune: true
   sourceRef:
     kind: GitRepository

@@ -12,7 +12,7 @@ spec:
       name: cert-manager
       namespace: network
   interval: 1h
-  path: "./apps/oliver/network/cert-manager/app"
+  path: "./apps/base/network/cert-manager/app"
   prune: true
   sourceRef:
     kind: GitRepository

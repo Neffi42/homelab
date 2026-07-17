@@ -4,4 +4,4 @@ kind: Kustomization
 
 resources:
   - ./namespace.yaml
-  - ./forgejo/ks.yaml
+  # - ./forgejo/ks.yaml

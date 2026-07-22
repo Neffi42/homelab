@@ -11,13 +11,21 @@ spec:
   values:
     controllers:
       firefox:
-        strategy: RollingUpdate
+        type: cronjob
+        cronjob:
+          schedule: "0 0 1 1 *"
+          suspend: true
+          concurrencyPolicy: Forbid
+          backoffLimit: 0
+          ttlSecondsAfterFinished: 3600
+          successfulJobsHistory: 3
+          failedJobsHistory: 1
         containers:
           app:
             image:
               repository: lscr.io/linuxserver/firefox
               tag: 1150.0.1
-            restartPolicy: Always
+            restartPolicy: Never
             env:
               - name: TZ
                 value: Europe/Paris

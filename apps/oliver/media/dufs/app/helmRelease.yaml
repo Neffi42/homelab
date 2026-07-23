@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: dufs
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: dufs
+  interval: 1h
+  values:
+    controllers:
+      dufs:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: docker.io/sigoden/dufs
+              tag: v0.46.0
+            restartPolicy: Always
+            args:
+              - /data
+            env:
+              - name: DUFS_ALLOW_ALL
+                value: false
+              - name: DUFS_ALLOW_UPLOAD
+                value: false
+              - name: DUFS_ALLOW_DELETE
+                value: false
+              - name: DUFS_ALLOW_SEARCH
+                value: true
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &httpPort 5000
+                    path: /
+                  initialDelaySeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+                  periodSeconds: 10
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+    service:
+      dufs:
+        controller: dufs
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        storageClass: local-path-oliver-ssd
+        accessMode: ReadWriteOnce
+        size: 100Mi
+        advancedMounts:
+          dufs:
+            app:
+              - path: /data
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "files.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: dufs
+                port: *httpPort

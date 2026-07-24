@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: qbittorrent
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: qbittorrent
+  interval: 1h
+  values:
+    defaultPodOptions:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 127.0.0.1
+
+    controllers:
+      main:
+        type: statefulset
+        containers:
+          # Doc for vpn settings: https://github.com/qdm12/gluetun-wiki/blob/main/setup/providers/protonvpn.md
+          gluetun:
+            image:
+              repository: qmcgaw/gluetun
+              tag: "v3.41.1"
+            envFrom:
+              - secret: vpn-credentials
+            env:
+              TZ: &timezone Europe/Paris
+              VPN_SERVICE_PROVIDER: protonvpn
+              SERVER_COUNTRIES: "France,Belgium,Switzerland,Italy,Germany,Spain"
+              VPN_PORT_FORWARDING: on
+              PORT_FORWARD_ONLY: on
+              VPN_PORT_FORWARDING_UP_COMMAND: >-
+                /bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":{{ "{{PORT}}" }},\"current_network_interface\":\"{{ "{{VPN_INTERFACE}}" }}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+              VPN_PORT_FORWARDING_DOWN_COMMAND: >-
+                /bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8080/api/v2/app/setPreferences'
+            securityContext:
+              capabilities:
+                add:
+                  - NET_ADMIN
+
+          qbittorrent:
+            image:
+              repository: lscr.io/linuxserver/qbittorrent
+              tag: "5.2.3"
+            env:
+              PUID: "1000"
+              PGID: "1000"
+              TZ: *timezone
+              WEBUI_PORT: "8080"
+              # TORRENTING_PORT: "6881"
+
+    service:
+      main:
+        controller: main
+        ports:
+          webui:
+            port: &httpPort 8080
+
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 100Mi
+        advancedMounts:
+          main:
+            qbittorrent:
+              - path: /config
+      downloads:
+        type: persistentVolumeClaim
+        storageClass: local-path-oliver-ssd
+        accessMode: ReadWriteOnce
+        size: 10Gi
+        advancedMounts:
+          main:
+            qbittorrent:
+              - path: /downloads
+      tun:
+        type: hostPath
+        hostPath: /dev/net/tun
+        hostPathType: CharDevice
+        advancedMounts:
+          main:
+            gluetun:
+              - path: /dev/net/tun
+    route:
+      webui:
+        kind: HTTPRoute
+        hostnames:
+          - "qbit.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: qbittorrent
+                port: *httpPort

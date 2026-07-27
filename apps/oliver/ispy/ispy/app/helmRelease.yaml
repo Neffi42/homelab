@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ispy
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: ispy
+  interval: 1h
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      main:
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: docker.io/mekayelanik/ispyagentdvr
+              tag: 7.7.7.0
+            restartPolicy: Always
+            env:
+              - name: TZ
+                value: Europe/Paris
+              - name: PUID
+                value: 1000
+              - name: PGID
+                value: 1000
+              - name: AGENTDVR_WEBUI_PORT
+                value: &httpPort 8090
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *httpPort
+                    path: /
+                  initialDelaySeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+                  periodSeconds: 10
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 100m
+              limits:
+                memory: 1Gi
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        size: 100Mi
+        advancedMounts:
+          main:
+            ispy:
+              - path: /AgentDVR/Media/XML
+                subPath: config
+              - path: /AgentDVR/Media/Models
+                subPath: models
+              - path: /AgentDVR/Commands
+                subPath: commands
+      recordings:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        storageClass: local-path-oliver-ssd
+        size: 100Mi
+        advancedMounts:
+          main:
+            ispy:
+              - path: /AgentDVR/Media/WebServerRoot/Media
+
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "ispy.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: ispy
+                port: *httpPort

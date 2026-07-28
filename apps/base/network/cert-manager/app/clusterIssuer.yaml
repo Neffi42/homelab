@@ -1,0 +1,33 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-bootstrap
+spec:
+  selfSigned: {}
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: internal-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: neffi internal CA
+  secretName: internal-ca-key-pair
+  duration: 87600h # 10 years — this is your root, rotate deliberately, not automatically
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-bootstrap
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: internal-ca
+spec:
+  ca:
+    secretName: internal-ca-key-pair

@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./helmRepository.yaml
   - ./helmRelease.yaml
+  - ./clusterIssuer.yaml

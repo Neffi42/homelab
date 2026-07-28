@@ -15,4 +15,4 @@ spec:
       - group: ""
         kind: ConfigMap
         name: kanidm-ca-cert
-    hostname: auth.neffi.fr
+    hostname: kanidm.auth.svc.cluster.local

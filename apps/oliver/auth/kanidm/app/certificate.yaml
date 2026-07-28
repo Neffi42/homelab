@@ -20,7 +20,7 @@ spec:
     size: 256
     rotationPolicy: Always
   issuerRef:
-    name: le-prod
+    name: internal-ca
     kind: ClusterIssuer
     group: cert-manager.io
   secretName: *name

@@ -34,3 +34,20 @@ resource "kanidm_group" "app_admins" {
     kanidm_person.neffi.id,
   ]
 }
+
+resource "kanidm_oauth2_basic" "fb_quantum" {
+  name        = "fb_quantum"
+  displayname = "FileBrowser Quantum"
+  origin      = var.fb_quantum_url
+
+  redirect_uris = [
+    var.fb_quantum_url,
+    "${var.fb_quantum_url}api/auth/oidc/callback"
+  ]
+  allow_insecure_client_disable_pkce = true
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups"]
+  }
+}

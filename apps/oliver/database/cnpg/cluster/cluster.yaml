@@ -27,12 +27,6 @@ spec:
         superuser: false
         passwordSecret:
           name: ferdium-credentials
-      - name: zitadel
-        ensure: present
-        login: true
-        superuser: false
-        passwordSecret:
-          name: zitadel-credentials
       - name: forgejo
         ensure: present
         login: true

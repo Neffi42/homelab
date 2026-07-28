@@ -21,12 +21,12 @@ auth:
       enabled: false
     oidc:
       enabled: true
-      issuerUrl: "https://auth.neffi.fr"
-      scopes: "email openid profile urn:zitadel:iam:org:project:roles"
+      issuerUrl: "https://auth.neffi.fr/oauth2/openid/fb_quantum"
+      scopes: "email openid profile groups"
       userIdentifier: "email"
       createUser: true
-      adminGroup: "admin"
-      groupsClaim: "urn:zitadel:iam:org:project:roles"
+      adminGroup: "app_admins"
+      groupsClaim: "groups"
 
 userDefaults:
   permissions:

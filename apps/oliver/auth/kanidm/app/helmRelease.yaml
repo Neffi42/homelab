@@ -58,8 +58,9 @@ spec:
         controller: kanidm
         forceRename: kanidm
         ports:
-          http:
+          https:
             port: *port
+            appProtocol: https
           ldap:
             port: 3636
     route:

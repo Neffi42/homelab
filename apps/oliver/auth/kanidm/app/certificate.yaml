@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/cert-manager.io/certificate_v1.json
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: &name kanidm-tls
+spec:
+  dnsNames:
+    - kanidm.auth.svc.cluster.local
+  subject:
+    countries:
+      - FR
+    organizations:
+      - neffi
+  usages:
+    - digital signature
+  duration: 720h # 1 month
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  issuerRef:
+    name: le-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  secretName: *name

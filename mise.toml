@@ -1,4 +1,5 @@
 [tools]
+"cargo:kanidm_tools" = { version = "latest", locked = true }
 flux2 = "latest"
 kubectl = "latest"
 "npm:yaml-language-server" = "latest"

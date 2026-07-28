@@ -5,3 +5,4 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./zitadel/ks.yaml
+  - ./kanidm/ks.yaml

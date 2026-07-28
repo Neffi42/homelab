@@ -1,0 +1,15 @@
+version = "2"
+
+domain = "auth.neffi.fr"
+origin = "https://auth.neffi.fr"
+
+bindaddress = "[::]:8443"
+ldapbindaddress = "[::]:3636"
+
+db_path = "/data/kanidm.db"
+
+tls_chain = "/certs/tls.crt"
+tls_key = "/certs/tls.key"
+
+[http_client_address_info]
+x-forward-for = ["10.42.0.0/16"]

@@ -6,6 +6,7 @@ metadata:
 spec:
   selfSigned: {}
 ---
+# yaml-language-server: $schema=https://schemas.neffi.fr/cert-manager.io/certificate_v1.json
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:

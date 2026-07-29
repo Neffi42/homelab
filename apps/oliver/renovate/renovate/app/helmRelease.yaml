@@ -36,9 +36,11 @@ spec:
                   name: renovate-credentials
             resources:
               requests:
-                cpu: 100m
+                cpu: 250m
+                memory: 512Mi
               limits:
-                memory: 1Gi
+                cpu: 1500m
+                memory: 1536Mi
     persistence:
       work-volume:
         enabled: true

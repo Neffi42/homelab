@@ -69,9 +69,11 @@ spec:
               readiness: *probe
             resources:
               requests:
-                cpu: 100m
+                cpu: 25m
+                memory: 128Mi
               limits:
-                memory: 1Gi
+                cpu: 250m
+                memory: 256Mi
       db-patcher:
         type: job
         annotations:

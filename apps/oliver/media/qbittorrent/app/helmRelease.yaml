@@ -40,6 +40,13 @@ spec:
               capabilities:
                 add:
                   - NET_ADMIN
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
 
           qbittorrent:
             image:
@@ -51,6 +58,13 @@ spec:
               TZ: *timezone
               WEBUI_PORT: "8080"
               # TORRENTING_PORT: "6881"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 1000m
+                memory: 1Gi
 
     service:
       main:

@@ -20,10 +20,10 @@ provider "kanidm" {
 }
 
 resource "kanidm_person" "neffi" {
-  name                                    = "neffi"
-  displayname                             = "Neffi"
-  mail                                    = ["me@neffi.fr"]
-  generate_initial_credential_reset_token = true
+  name        = "neffi"
+  displayname = "Neffi"
+  mail        = ["me@neffi.fr"]
+}
 }
 
 resource "kanidm_group" "app_admins" {

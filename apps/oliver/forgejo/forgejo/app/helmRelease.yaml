@@ -98,7 +98,7 @@ spec:
         mailer:
           ENABLED: false
         repository:
-          DEFAULT_REPO_UNITS: repo.code,repo.releases,repo.pulls,repo.actions
+          DEFAULT_REPO_UNITS: repo.code,repo.releases,repo.pulls,repo.actions,repo.issues
           DISABLED_REPO_UNITS: repo.ext_wiki,repo.ext_issues
           DISABLE_DOWNLOAD_SOURCE_ARCHIVES: true
           ENABLE_PUSH_CREATE_USER: true

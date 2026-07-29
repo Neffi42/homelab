@@ -27,3 +27,9 @@ variable "forgejo_url" {
   type        = string
   default     = "https://code.neffi.fr/"
 }
+
+variable "bot_oliver_mail" {
+  description = "Bot Oliver's email"
+  type        = string
+  sensitive   = true
+}

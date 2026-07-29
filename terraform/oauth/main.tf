@@ -31,6 +31,12 @@ resource "kanidm_person" "cla" {
   mail        = [var.cla_mail]
 }
 
+resource "kanidm_person" "bot_oliver" {
+  name        = "bot-oliver"
+  displayname = "Bot Oliver"
+  mail        = [var.bot_oliver_mail]
+}
+
 resource "kanidm_group" "app_admins" {
   name        = "app_admins"
   description = "Administrator team for downstream apps"
@@ -55,6 +61,7 @@ resource "kanidm_group" "forgejo_users" {
 
   members = [
     kanidm_person.neffi.id,
+    kanidm_person.bot_oliver.id,
   ]
 }
 

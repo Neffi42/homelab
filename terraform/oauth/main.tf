@@ -55,7 +55,6 @@ resource "kanidm_oauth2_basic" "fb_quantum" {
   origin      = var.fb_quantum_url
 
   redirect_uris = [
-    var.fb_quantum_url,
     "${var.fb_quantum_url}api/auth/oidc/callback"
   ]
   allow_insecure_client_disable_pkce = true

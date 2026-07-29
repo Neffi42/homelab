@@ -49,15 +49,6 @@ resource "kanidm_group" "fb_quantum_users" {
   ]
 }
 
-resource "kanidm_group" "ispy_users" {
-  name        = "ispy_users"
-  description = "Ispy AgentDVR standard users"
-
-  members = [
-    kanidm_person.cla.id,
-  ]
-}
-
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"
@@ -72,25 +63,5 @@ resource "kanidm_oauth2_basic" "fb_quantum" {
   scope_map {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
-  }
-}
-
-resource "kanidm_oauth2_basic" "ispy" {
-  name        = "ispy"
-  displayname = "Ispy AgentDVR"
-  origin      = var.ispy_url
-
-  redirect_uris = [
-    var.ispy_url,
-  ]
-
-  scope_map {
-    group  = kanidm_group.app_admins.id
-    scopes = ["openid", "profile", "email", "groups"]
-  }
-
-  scope_map {
-    group  = kanidm_group.ispy_users.id
-    scopes = ["openid", "profile", "email", "groups"]
   }
 }

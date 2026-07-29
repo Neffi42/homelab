@@ -16,12 +16,6 @@ variable "fb_quantum_url" {
   default     = "https://cloud.neffi.fr/"
 }
 
-variable "ispy_url" {
-  description = "Url of the Ispy AgentDVR instance to administrate"
-  type        = string
-  default     = "https://ispy.neffi.fr/"
-}
-
 variable "cla_mail" {
   description = "Cla's email"
   type        = string

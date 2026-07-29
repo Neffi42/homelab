@@ -68,6 +68,8 @@ spec:
         hostnames:
           - "auth.neffi.fr"
         parentRefs:
+          - name: public
+            namespace: network
           - name: private
             namespace: network
     persistence:

@@ -26,6 +26,7 @@ spec:
             env:
               TZ: Europe/Paris
               FTLCONF_dns_listeningMode: ALL
+              FTLCONF_webserver_api_max_sessions: 32
             envFrom:
               - secretRef:
                   name: pi-hole-credentials

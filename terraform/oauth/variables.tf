@@ -15,3 +15,9 @@ variable "fb_quantum_url" {
   type        = string
   default     = "https://cloud.neffi.fr/"
 }
+
+variable "cla_mail" {
+  description = "Cla's email"
+  type        = string
+  sensitive   = true
+}

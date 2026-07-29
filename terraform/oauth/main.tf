@@ -24,6 +24,11 @@ resource "kanidm_person" "neffi" {
   displayname = "Neffi"
   mail        = ["me@neffi.fr"]
 }
+
+resource "kanidm_person" "cla" {
+  name        = "cla"
+  displayname = "Clara Touraine"
+  mail        = [var.cla_mail]
 }
 
 resource "kanidm_group" "app_admins" {

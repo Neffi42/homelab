@@ -12,13 +12,10 @@ spec:
     controllers:
       renovate:
         type: cronjob
-        pod:
-          nodeSelector:
-            kubernetes.io/hostname: oliver
         cronjob:
           schedule: "@hourly"
           concurrencyPolicy: Forbid
-          successfulJobsHistory: 3
+          successfulJobsHistory: 1
           failedJobsHistory: 1
         containers:
           renovate:

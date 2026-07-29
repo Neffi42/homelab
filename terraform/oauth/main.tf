@@ -87,7 +87,7 @@ resource "kanidm_oauth2_basic" "forgejo" {
   origin      = var.forgejo_url
 
   redirect_uris = [
-    "${var.fb_quantum_url}user/oauth2/kanidm/callback"
+    "${var.forgejo_url}user/oauth2/kanidm/callback"
   ]
   allow_insecure_client_disable_pkce = true
 

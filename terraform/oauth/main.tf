@@ -49,6 +49,15 @@ resource "kanidm_group" "fb_quantum_users" {
   ]
 }
 
+resource "kanidm_group" "forgejo_users" {
+  name        = "forgejo_users"
+  description = "Forgejo users"
+
+  members = [
+    kanidm_person.neffi.id,
+  ]
+}
+
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"
@@ -61,6 +70,27 @@ resource "kanidm_oauth2_basic" "fb_quantum" {
 
   scope_map {
     group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "forgejo" {
+  name        = "forgejo"
+  displayname = "Forgejo"
+  origin      = var.forgejo_url
+
+  redirect_uris = [
+    "${var.fb_quantum_url}user/oauth2/kanidm/callback"
+  ]
+  allow_insecure_client_disable_pkce = true
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  scope_map {
+    group  = kanidm_group.forgejo_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }

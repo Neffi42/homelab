@@ -59,13 +59,13 @@ spec:
       admin:
         username: ""
       oauth:
-        - name: zitadel
+        - name: kanidm
           provider: openidConnect
-          adminGroup: admin
-          autoDiscoverUrl: https://auth.neffi.fr/.well-known/openid-configuration
+          autoDiscoverUrl: https://auth.neffi.fr/oauth2/openid/forgejo/.well-known/openid-configuration
           existingSecret: forgejo-oauth-credentials
-          groupClaimName: "urn:zitadel:iam:org:project:roles"
-          scopes: "email profile urn:zitadel:iam:org:project:roles"
+          scopes: "email profile groups_name"
+          groupClaimName: "groups"
+          adminGroup: app_admins
       additionalConfigSources:
         - secret:
             secretName: forgejo-db-credentials

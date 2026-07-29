@@ -21,3 +21,9 @@ variable "cla_mail" {
   type        = string
   sensitive   = true
 }
+
+variable "forgejo_url" {
+  description = "Url of the Forgejo instance to administrate"
+  type        = string
+  default     = "https://code.neffi.fr/"
+}

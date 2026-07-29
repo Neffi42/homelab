@@ -12,8 +12,10 @@ spec:
     mode: enabled
   values:
     controllers:
-      fb-quantum:
-        strategy: RollingUpdate
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        type: statefulset
         containers:
           app:
             image:
@@ -43,7 +45,7 @@ spec:
               requests:
                 cpu: 100m
               limits:
-                memory: 1Gi
+                memory: 256Mi
     persistence:
       data:
         type: persistentVolumeClaim
@@ -62,8 +64,8 @@ spec:
           - path: /home/filebrowser/data
             readOnly: true
     service:
-      fb-quantum:
-        controller: fb-quantum
+      main:
+        controller: main
         ports:
           http:
             port: *httpPort

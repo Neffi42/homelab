@@ -22,12 +22,14 @@ auth:
     oidc:
       enabled: true
       issuerUrl: "https://auth.neffi.fr/oauth2/openid/fb_quantum"
-      scopes: "email openid profile groups"
+      scopes: "openid email profile groups_name"
       userIdentifier: "email"
       createUser: true
-      adminGroup: "app_admins"
       groupsClaim: "groups"
+      adminGroup: "app_admins"
+      userGroups: ["fb_quantum_users"]
 
 userDefaults:
-  permissions:
-    api: true
+  account:
+    permissions:
+      api: true

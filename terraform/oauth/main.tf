@@ -40,6 +40,15 @@ resource "kanidm_group" "app_admins" {
   ]
 }
 
+resource "kanidm_group" "fb_quantum_users" {
+  name        = "fb_quantum_users"
+  description = "FileBrowser Quantum standard users"
+
+  members = [
+    kanidm_person.neffi.id,
+  ]
+}
+
 resource "kanidm_group" "ispy_users" {
   name        = "ispy_users"
   description = "Ispy AgentDVR standard users"
@@ -62,7 +71,7 @@ resource "kanidm_oauth2_basic" "fb_quantum" {
 
   scope_map {
     group  = kanidm_group.app_admins.id
-    scopes = ["openid", "profile", "email", "groups"]
+    scopes = ["openid", "profile", "email", "groups_name"]
   }
 }
 

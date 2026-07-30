@@ -14,7 +14,9 @@ spec:
         type: cronjob
         cronjob:
           schedule: "@hourly"
-          concurrencyPolicy: Forbid
+          concurrencyPolicy: Replace
+          startingDeadlineSeconds: 1800
+          ttlSecondsAfterFinished: 86400
           successfulJobsHistory: 1
           failedJobsHistory: 1
         containers:
@@ -22,7 +24,7 @@ spec:
             image:
               repository: renovate/renovate
               tag: 44.2
-            restartPolicy: Always
+            restartPolicy: Never
             env:
               TZ: Europe/Paris
               LOG_LEVEL: debug

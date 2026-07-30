@@ -14,7 +14,7 @@ spec:
       rootless: true
       registry: code.forgejo.org
       repository: forgejo/forgejo
-      tag: 15.0.4-rootless
+      tag: 15.0.5-rootless
     persistence:
       enabled: true
       storageClass: local-path-oliver-ssd

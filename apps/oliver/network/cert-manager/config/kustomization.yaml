@@ -4,4 +4,4 @@ kind: Kustomization
 
 resources:
   - ../../../../base/network/cert-manager/config
-  - ./external-secret.yaml
+  - ./externalSecret.yaml

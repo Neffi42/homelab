@@ -22,4 +22,4 @@ allowedTopologies:
         values:
           - raspberrypi
 parameters:
-  nodePath: /mnt/fab/k3s
+  nodePath: /mnt/nabil/k3s

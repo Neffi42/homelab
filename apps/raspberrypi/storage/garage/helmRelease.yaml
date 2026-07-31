@@ -40,7 +40,7 @@ spec:
     persistence:
       enabled: true
       meta:
-        storageClass: "local-path"
+        storageClass: "local-path-sd"
       data:
         storageClass: "local-path-hdd"
 

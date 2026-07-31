@@ -31,6 +31,8 @@ spec:
       keys:
         internal-key:
           secretName: internal-key
+          keyId: keyId
+          secretKey: secretKey
           buckets:
             - backups
 

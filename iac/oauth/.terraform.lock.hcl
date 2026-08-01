@@ -1,11 +1,22 @@
-# This file is maintained automatically by "terraform init".
+# This file is maintained automatically by "tofu init".
 # Manual edits may be lost in future updates.
 
-provider "registry.terraform.io/seanlatimer/kanidm" {
+provider "registry.opentofu.org/seanlatimer/kanidm" {
   version     = "0.1.10"
   constraints = "~> 0.1.10"
   hashes = [
+    "h1:+9B+zKM3p8BlpBphJLvJkivUC4XrpVxua+o+Ul3dJzs=",
+    "h1:/shNKmgOTm+ag+UmvJ5dmarRaoPBz97y5aHGNPYaEMU=",
     "h1:5X0gXNRgi4CJClDHKXXvbRzLIqgqAyYGtPWclQAXuXU=",
+    "h1:WoMJLvBR/NDe6KW4hMy84izxvVSfrB/lVU78FXFMvog=",
+    "h1:bbRnncl6RFvoY9cFtSrltRks+zsW6Qs2hhDFvMzdVU0=",
+    "h1:gew1zhZz9DfEx4TJlMH9ZIUQSX2TBRDkRKPFtgoU8OU=",
+    "h1:iNxwpHoB4FJgBKrbuNatk+4A/H8XqTxjkVKOtEfY+L0=",
+    "h1:kqCSxSS1gzauPy27fuaG7IgD3AlDtWCmRb95xsbujHk=",
+    "h1:pNbOjYgFGvnJvDfkImdfgBYeBf8IoR80kI7moufn5kM=",
+    "h1:poTm4BOGAq4enIGHdJca0jJU3RcEUaNTXxsSprhan44=",
+    "h1:uoMxtJYvgq4olDmA2MvTUht9sF6CaHSZVvUNbQr8BF8=",
+    "h1:vyn3RrzK9Dvtacfx6UOpoQlDi7dqE/p2XfC7A+vLMTE=",
     "zh:0b7b23e478bc89da28811e2913a5dd5ffc4bfedc77699a6a886d6cd2671560fa",
     "zh:129350926b63a567f473c75068b4d568677285e97dce5355dc6a6f9ad32d960d",
     "zh:410dc705e6661e7c992832203275df0c4ca728af61ec147bda7b01d6f6934f2d",

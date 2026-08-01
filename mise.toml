@@ -1,11 +1,11 @@
 [tools]
 "cargo:kanidm_tools" = { version = "latest", locked = true }
 flux2 = "latest"
+"github:opentofu/tofu-ls" = "latest"
 kubectl = "latest"
 "npm:yaml-language-server" = "latest"
+opentofu = "latest"
 oxfmt = "latest"
-terraform = "latest"
-terraform-ls = "latest"
 
 [env]
 KUBE_CONFIG_PATH = "~/.kube/config"

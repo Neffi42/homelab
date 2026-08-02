@@ -23,7 +23,7 @@ spec:
           renovate:
             image:
               repository: renovate/renovate
-              tag: 44.5
+              tag: 44.6
             restartPolicy: Never
             env:
               TZ: Europe/Paris

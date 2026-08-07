@@ -20,7 +20,7 @@ spec:
           app:
             image:
               repository: docker.io/gtstef/filebrowser
-              tag: stable@sha256:fc213590ebc090cb8205125cd3ecdfa9066b9ed4a0b53fe2570972d6a3379e73
+              tag: stable@sha256:e82e3bb6d03d4c9e6d5b6ded452b202f79bad335490889591580bf350b601133
             restartPolicy: Always
             env:
               - name: TZ

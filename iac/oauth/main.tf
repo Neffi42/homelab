@@ -65,6 +65,15 @@ resource "kanidm_group" "forgejo_users" {
   ]
 }
 
+resource "kanidm_group" "vaultwarden_users" {
+  name        = "vaultwarden_users"
+  description = "Vaultwarden users"
+
+  members = [
+    kanidm_person.neffi.id,
+  ]
+}
+
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"
@@ -98,6 +107,26 @@ resource "kanidm_oauth2_basic" "forgejo" {
 
   scope_map {
     group  = kanidm_group.forgejo_users.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "vaultwarden" {
+  name        = "vaultwarden"
+  displayname = "Vaultwarden"
+  origin      = var.vaultwarden_url
+
+  redirect_uris = [
+    "${var.vaultwarden_url}identity/connect/oidc-signin"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  scope_map {
+    group  = kanidm_group.vaultwarden_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }

@@ -9,3 +9,9 @@ output "forgejo_oauth_secret" {
   value       = kanidm_oauth2_basic.forgejo.client_secret
   sensitive   = true
 }
+
+output "vaultwarden_oauth_secret" {
+  description = "OAuth2 client secret for Vaultwarden"
+  value       = kanidm_oauth2_basic.forgejo.client_secret
+  sensitive   = true
+}

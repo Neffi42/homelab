@@ -9,3 +9,4 @@ oxfmt = "latest"
 
 [env]
 KUBE_CONFIG_PATH = "~/.kube/config"
+KANIDM_URL = "https://auth.neffi.fr/"

@@ -19,10 +19,8 @@ spec:
             image:
               repository: docker.io/vaultwarden/server
               tag: 1.37.1-alpine
-            args:
-              - /data
             envFrom:
-              - secret: sso-credentials
+              - secret: vaultwarden-sso-credentials
             env:
               - name: DOMAIN
                 value: "https://vaultwarden.neffi.fr"
@@ -67,7 +65,7 @@ spec:
         accessMode: ReadWriteOnce
         size: 100Mi
         advancedMounts:
-          vaultwarden:
+          main:
             app:
               - path: /data
     route:

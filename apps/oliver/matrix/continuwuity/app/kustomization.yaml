@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ./externalSecret.yaml
+  - ./helmRelease.yaml
+  - ./ociRepository.yaml
+configMapGenerator:
+  - name: continuwuity-configmap
+    files:
+      - continuwuity.toml=./resources/continuwuity.toml
+  - name: unbound-configmap
+    files:
+      - unbound.conf=./resources/unbound.conf
+generatorOptions:
+  disableNameSuffixHash: true

@@ -1,6 +1,7 @@
 [tools]
 "cargo:kanidm_tools" = { version = "latest", locked = true }
 flux2 = "latest"
+"github:home-operations/flate" = "latest"
 "github:opentofu/tofu-ls" = "latest"
 kubectl = "latest"
 "npm:yaml-language-server" = "latest"
@@ -10,3 +11,4 @@ oxfmt = "latest"
 [env]
 KUBE_CONFIG_PATH = "~/.kube/config"
 KANIDM_URL = "https://auth.neffi.fr/"
+KUBECONFIG = "/Users/abasdereff/.kube/homelab"

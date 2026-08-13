@@ -45,6 +45,17 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: "neffi-fr-tls"
+    - name: https-base
+      hostname: "neffi.fr"
+      protocol: HTTPS
+      port: 443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: "neffi-fr-tls"
     - name: dns-udp
       protocol: UDP
       port: 53
@@ -70,6 +81,17 @@ spec:
   listeners:
     - name: https
       hostname: "*.neffi.fr"
+      protocol: HTTPS
+      port: 4443
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: "neffi-fr-tls"
+    - name: https-base
+      hostname: "neffi.fr"
       protocol: HTTPS
       port: 4443
       allowedRoutes:

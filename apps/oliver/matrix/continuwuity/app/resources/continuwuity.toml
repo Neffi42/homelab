@@ -1,0 +1,51 @@
+[global]
+server_name = "neffi.fr"
+address = ["0.0.0.0"]
+port = 8008
+
+log = "info"
+
+# DB settings
+database_path = "/data"
+database_backup_path = "/backups"
+database_backups_to_keep = 1
+
+rocksdb_compression_algo = "zstd"
+rocksdb_compression_level = 32767
+rocksdb_bottommost_compression_level = 32767
+rocksdb_bottommost_compression = true
+
+# Perf tuning
+max_request_size = 524288000
+
+# DNS optimisation
+dns_cache_entries = 0
+dns_timeout = 60
+query_over_tcp_only = true
+ip_lookup_strategy = 3
+
+# User settings
+allow_encryption = true
+allow_federation = true
+allow_registration = true
+new_user_displayname_suffix = ""
+suspend_on_register = false
+
+# Harden
+allow_public_room_directory_over_federation = false
+lockdown_public_room_directory = true
+require_auth_for_profile_requests = true
+trusted_servers = ["codestorm.net", "starstruck.systems", "unredacted.org"]
+
+[global.oauth.oidc]
+discovery_url = "https://auth.neffi.fr/oauth2/openid/continuwuity"
+client_id = "continuwuity"
+client_secret_file = "/etc/continuwuity/oidc_secret"
+prompt_for_localpart = true
+
+[global.well_known]
+client = "https://matrix.neffi.fr"
+server = "matrix.neffi.fr:443"
+
+# [global.matrix_rtc]
+# foci = [{ type = "livekit", livekit_service_url = "https://livekit.neffi.fr" }]

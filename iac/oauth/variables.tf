@@ -39,3 +39,9 @@ variable "vaultwarden_url" {
   type        = string
   default     = "https://vaultwarden.neffi.fr/"
 }
+
+variable "continuwuity_url" {
+  description = "Url of the Continuwuity instance to administrate"
+  type        = string
+  default     = "https://matrix.neffi.fr/"
+}

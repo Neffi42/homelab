@@ -64,7 +64,7 @@ spec:
     route:
       app:
         hostnames:
-          - "chat.matrix.neffi.fr"
+          - "sable.neffi.fr"
         parentRefs:
           - name: private
             namespace: network

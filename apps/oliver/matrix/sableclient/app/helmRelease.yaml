@@ -1,0 +1,73 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: sableclient
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: sableclient
+  interval: 1h
+  values:
+    controllers:
+      sableclient:
+        type: deployment
+        strategy: RollingUpdate
+        containers:
+          app:
+            image:
+              repository: ghcr.io/sableclient/sable
+              tag: latest@sha256:99b7637d616dff5f0c495980cbec9355b401282bfef8a89a3b0fcf3ca2273ace
+            env:
+              TZ: Europe/Paris
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 8080
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: "1"
+                memory: 256Mi
+              limits:
+                memory: 512Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+
+    service:
+      app:
+        ports:
+          http:
+            port: 80
+            targetPort: *port
+
+    route:
+      app:
+        hostnames:
+          - "chat.matrix.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: 80

@@ -18,7 +18,7 @@ spec:
           app:
             image:
               repository: ghcr.io/sableclient/sable
-              tag: latest@sha256:16d5bcccfa63d224e7b44204a9b06650c457a3b18d0a4681c3fe1a91cf2c5398
+              tag: latest@sha256:ce50ce3ba3cc8424cb7e35e833b3c9325ba29d3d7269835fcfc5f7f660be6887
             env:
               TZ: Europe/Paris
             probes:

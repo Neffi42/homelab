@@ -8,5 +8,5 @@ spec:
     name: le-prod
     kind: ClusterIssuer
   dnsNames:
-    - "*.neffi.fr"
-    - "neffi.fr"
+    - "*.pi.neffi.fr"
+    - "pi.neffi.fr"

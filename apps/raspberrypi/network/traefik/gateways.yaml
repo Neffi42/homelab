@@ -2,9 +2,12 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: main
+  name: private
 spec:
   gatewayClassName: traefik
+  addresses:
+    - type: IPAddress
+      value: "100.111.148.46"
   listeners:
     - name: https
       protocol: HTTPS

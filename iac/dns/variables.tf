@@ -15,11 +15,6 @@ variable "pihole_password" {
   sensitive   = true
 }
 
-variable "pihole_target_ip" {
-  description = "The targeted ip address by pihole records"
-  type        = string
-}
-
 variable "ovh_endpoint" {
   description = "The ovh endpoint to use"
   type        = string

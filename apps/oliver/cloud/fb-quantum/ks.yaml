@@ -22,3 +22,28 @@ spec:
     namespace: flux-system
   targetNamespace: cloud
   timeout: 5m
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: fb-quantum-backup
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: fb-quantum
+    - name: kopiur-config
+  healthChecks:
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: fb-quantum-data
+      namespace: cloud
+  interval: 1h
+  path: "./apps/oliver/cloud/fb-quantum/config"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: cloud
+  timeout: 5m

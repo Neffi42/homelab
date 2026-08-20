@@ -62,3 +62,15 @@ spec:
             - "s3.pi.neffi.fr"
           parentRefs:
             - name: private
+
+    webui:
+      enabled: true
+      auth:
+        enabled: true
+        existingSecret: garage-webui-auth
+      gatewayApi:
+        enabled: true
+        hostnames:
+          - "garage.pi.neffi.fr"
+        parentRefs:
+          - name: private

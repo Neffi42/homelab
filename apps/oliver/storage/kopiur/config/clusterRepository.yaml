@@ -30,3 +30,4 @@ spec:
       - ferdium
       - cloud
       - auth
+      - matrix

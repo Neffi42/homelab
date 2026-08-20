@@ -17,3 +17,27 @@ spec:
     name: flux-system
     namespace: flux-system
   targetNamespace: matrix
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: continuwuity-backup
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: continuwuity
+    - name: kopiur-config
+  healthChecks:
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: continuwuity-data
+      namespace: matrix
+  interval: 1h
+  path: ./apps/oliver/matrix/continuwuity/config
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: matrix

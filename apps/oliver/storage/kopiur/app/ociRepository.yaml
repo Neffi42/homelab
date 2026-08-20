@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: kopiur
+spec:
+  interval: 1h
+  url: oci://ghcr.io/home-operations/charts/kopiur
+  ref:
+    tag: "0.10.3"
+    digest: sha256:c2bc4be57fb912312860d0016552975df74d81045084cf349175a2a0f513c7c3

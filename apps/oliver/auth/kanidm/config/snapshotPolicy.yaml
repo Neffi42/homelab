@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: kanidm-data
+spec:
+  repository:
+    kind: ClusterRepository
+    name: garage-raspberrypi
+  credentialProjection:
+    enabled: true
+  # oliver has no CSI snapshot-controller/VolumeSnapshotClass (local-path only).
+  copyMethod: Direct
+  compression:
+    compressor: zstd
+  mover:
+    # kanidm's pod pins runAsUser/runAsGroup: 1000 explicitly (checked live) ->
+    # pvcConsumer inherit resolves cleanly, no explicit fallback needed.
+    inheritSecurityContextFrom:
+      pvcConsumer: {}
+  sources:
+    - pvc:
+        name: kanidm
+  retention:
+    keepDaily: 14
+    keepWeekly: 4

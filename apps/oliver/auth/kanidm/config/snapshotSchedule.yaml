@@ -1,0 +1,13 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotschedule_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotSchedule
+metadata:
+  name: kanidm-data
+spec:
+  policyRef:
+    name: kanidm-data
+  schedule:
+    cron: "H 1 * * *"
+    jitter: 30m
+    runOnCreate: false

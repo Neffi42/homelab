@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/snapshotpolicy_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: SnapshotPolicy
+metadata:
+  name: ferdium-data
+spec:
+  repository:
+    kind: ClusterRepository
+    name: garage-raspberrypi
+  credentialProjection:
+    enabled: true
+  # oliver has no CSI snapshot-controller/VolumeSnapshotClass (local-path only).
+  copyMethod: Direct
+  compression:
+    compressor: zstd
+  sources:
+    - pvc:
+        name: ferdium
+  retention:
+    keepDaily: 7

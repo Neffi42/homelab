@@ -26,4 +26,5 @@ spec:
     allowed: true
   allowedNamespaces:
     list:
+      - forgejo
       - ferdium

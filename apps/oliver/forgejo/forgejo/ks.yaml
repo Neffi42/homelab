@@ -25,3 +25,28 @@ spec:
     namespace: flux-system
   targetNamespace: forgejo
   timeout: 5m
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: forgejo-backup
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: forgejo
+    - name: kopiur-config
+  healthChecks:
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: forgejo-data
+      namespace: forgejo
+  interval: 1h
+  path: "./apps/oliver/forgejo/forgejo/config"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: forgejo
+  timeout: 5m

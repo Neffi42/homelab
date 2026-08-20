@@ -34,12 +34,6 @@ variable "bot_oliver_mail" {
   sensitive   = true
 }
 
-variable "vaultwarden_url" {
-  description = "Url of the Vaultwarden instance to administrate"
-  type        = string
-  default     = "https://vaultwarden.neffi.fr/"
-}
-
 variable "continuwuity_url" {
   description = "Url of the Continuwuity instance to administrate"
   type        = string

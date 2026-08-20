@@ -5,4 +5,3 @@ kind: Kustomization
 resources:
   - ../../base/security
   - ./external-secrets/ks.yaml
-  - ./vaultwarden/ks.yaml

@@ -62,6 +62,7 @@ spec:
             - "s3.pi.neffi.fr"
           parentRefs:
             - name: private
+              namespace: network
 
     webui:
       enabled: true
@@ -74,3 +75,4 @@ spec:
           - "garage.pi.neffi.fr"
         parentRefs:
           - name: private
+            namespace: network

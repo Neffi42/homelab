@@ -21,7 +21,12 @@ Key tools: `flux2`, `opentofu`, `kubectl`, `tofu-ls`, `yaml-language-server`, `k
 
 There is no linter/test runner in this repo. Validate changes by:
 - `kubectl kustomize <dir>` — locally builds a `kustomization.yaml` to catch structural errors before pushing.
-- `flux build kustomization <name> --path <dir> ...` — dry-run a Flux Kustomization against the cluster.
+  Does **not** see a Flux `Kustomization`'s `spec.components`/`spec.patches`/`spec.postBuild` — those are
+  applied by kustomize-controller on top of the plain `kustomize build`, so an app using `spec.components`
+  (see `apps/components/` below) looks incomplete/wrong through this command alone.
+- `flux build kustomization <name> --path <dir> --kustomization-file <ks.yaml> --dry-run` — the one that
+  actually reflects `spec.components`/`postBuild.substitute`/`dependsOn`-aware output; required for anything
+  wired through `apps/components/`, optional (but still useful) otherwise.
 - `tofu -chdir=iac/<stack> validate` / `tofu -chdir=iac/<stack> plan` — for the two Terraform stacks.
 
 YAML files carry `# yaml-language-server: $schema=...` comment headers pointing at
@@ -36,6 +41,7 @@ apps/
   base/<category>/<app>/       # cluster-agnostic manifests, referenced by overlays
   oliver/<category>/<app>/     # the "oliver" cluster's tree
   raspberrypi/<category>/<app>/ # the "raspberrypi" cluster's tree
+  components/<name>/           # shared Kustomize Components (kind: Component), see below
 flux/<cluster>/                # Flux bootstrap output (gotk-*.yaml, generated — don't hand-edit)
                                 # + apps.yaml, the root Kustomization pointing at ./apps/<cluster>
 iac/<stack>/                   # OpenTofu stacks run manually, state in-cluster (see below)
@@ -92,10 +98,64 @@ addresses) stay in that cluster's own overlay/HelmRelease.
 - Two Gateways exist cluster-wide on `oliver`: `public` (WAN-facing, ports 4443/2222 on the LAN
   IP) and `private` (Tailscale IP, port 443, also does port-53 DNS). New `HTTPRoute`/`TCPRoute`
   resources pick one of these via `parentRefs`, matching whether the service should be internet-
-  reachable.
+  reachable. `raspberrypi` mirrors the `private` half only (traefik `gatewayClassName`, `Gateway`
+  named `private`, `spec.addresses` set to its own Tailscale IP) — a cross-namespace `parentRefs`
+  entry on either cluster **must** set `namespace: network` explicitly, it does not default to the
+  Gateway's namespace.
 - Auth: Kanidm (`apps/oliver/auth/kanidm`) is the OIDC provider; app OAuth2 clients/groups are
   provisioned in `iac/oauth`, not in the app's own Kustomization — adding a new OIDC-integrated
   app means adding a `kanidm_oauth2_basic` + `kanidm_group` there too.
+- Backups: kopiur (`apps/oliver/storage/kopiur`) backs up PVCs to garage's `backups` bucket on
+  raspberrypi via the `garage-raspberrypi` `ClusterRepository`. `oliver` has no CSI
+  snapshot-controller/`VolumeSnapshotClass` (`local-path` only) — every `SnapshotPolicy` needs
+  `copyMethod: Direct`. The mover's default UID (`65532`) frequently can't read an app's real data
+  (rootless images running as `1000`, `0700`-permission dirs like SSH keys) — check the live pod's
+  actual `securityContext` (container **and** pod level) before assuming
+  `inheritSecurityContextFrom.pvcConsumer` alone works; it only inherits a UID the pod spec
+  actually pins, not one baked into the image. Consuming a `ClusterRepository`'s credentials from
+  another namespace needs `credentialProjection.enabled: true` on the consumer (`SnapshotPolicy`
+  *and* `Restore` separately — it's per-object, not inherited).
+
+### Reusable Kustomize Components (`apps/components/`)
+
+Cross-cutting config that several apps need the same shape of (backups, auth sidecars, etc.) lives
+as a `kind: Component` under `apps/components/<name>/`, parameterized with `${VAR:=default}`
+placeholders. An app pulls one in via the **Flux `Kustomization`'s own `spec.components`** field
+(not a `components:` line in the app's local `kustomization.yaml`) — paths there are relative to
+`spec.path`, not to the `ks.yaml` file itself:
+
+```yaml
+spec:
+  components:
+    - ../../../../components/kopiur   # relative to spec.path, count ../ from there to apps/
+  path: ./apps/oliver/<category>/<app>/app
+  postBuild:
+    substitute:
+      APP: <app-name>              # placeholders resolve via postBuild.substitute, not kustomize vars
+      KOPIUR_KEEPDAILY: "14"        # only the vars that differ from the component's own defaults
+```
+
+`spec.components` is an alpha/experimental Flux feature (may change without warning) but is what's
+actually used here — prefer it over wiring a Component into the app's own `kustomization.yaml`.
+
+`apps/components/kopiur` is the current example: `Restore` (passive `target.populator: {}`) +
+`SnapshotPolicy` + `SnapshotSchedule` for backing up one PVC via kopiur (`apps/oliver/storage/kopiur`)
+to the `garage-raspberrypi` `ClusterRepository`. The app's own chart keeps owning its PVC normally
+(`type: persistentVolumeClaim`, no `existingClaim`/`dataSourceRef`) — the `SnapshotPolicy` just
+points `sources[].pvc.name` at it via `${KOPIUR_PVC:=${APP}}`.
+
+**Deliberately does *not* include a PVC.** `rancher.io/local-path` — the only StorageClass on either
+cluster — is not a populator-aware provisioner: it binds a PVC to an empty volume immediately,
+racing straight past any `dataSourceRef`, before kopiur's `Restore` can finish writing its staging
+volume and hand off. Kopiur detects this and fails the `Restore` (`PopulateHijacked`), but the app's
+PVC is already bound empty by then — confirmed live on ferdium. The `dataSourceRef`/`existingClaim`
+"deploy-or-restore" pattern (mortebrume's version, and this component's own earlier draft) **needs
+a real CSI driver with `AnyVolumeDataSource` populator support** (e.g. their `zfs-pv`) — nothing on
+oliver or raspberrypi provides that today. The `Restore` this component ships is inert on purpose:
+nothing ever claims it, so it just sits `AwaitingClaim` forever (a documented-safe kopiur state) —
+kept so a real populator-capable StorageClass, if one ever arrives, only needs a PVC with a matching
+`dataSourceRef` added, not a new `Restore`. Don't reintroduce a `pvc.yaml` here without first
+confirming the target StorageClass's provisioner actually implements populators.
 
 ## OpenTofu stacks (`iac/`)
 
@@ -105,8 +165,12 @@ backend):
 
 - `iac/dns` — derives DNS records from live cluster state: reads `HTTPRoute` objects via the
   `kubernetes_resources` data source, buckets hostnames into public (OVH zone, `A` record to the
-  WAN IP) vs private (Pi-hole, LAN IP) by which Gateway (`public`/`private`) they reference, plus
-  a `manual_dns_entries` var for anything not backed by an HTTPRoute.
+  WAN IP) vs private (Pi-hole) by which Gateway (`public`/`private`) they reference, plus a
+  `manual_dns_entries` var for anything not backed by an HTTPRoute. The private target IP is
+  **not** a var — it's read back from whichever cluster's own `Gateway` named `private` is live in
+  the current `KUBECONFIG` context (`spec.addresses`), so each cluster's private HTTPRoutes
+  resolve to that cluster's own Tailscale IP automatically; a cluster with no `private` Gateway
+  (or one missing `spec.addresses`) fails the plan rather than writing a wrong/`null` IP.
 - `iac/oauth` — Kanidm persons/groups/OAuth2 clients (see above).
 
 Run with `tofu -chdir=iac/<stack> plan|apply`; backend is `kubernetes` (`secret_suffix` = stack

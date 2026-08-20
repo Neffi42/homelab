@@ -3,11 +3,11 @@
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotSchedule
 metadata:
-  name: ferdium-data
+  name: ${APP}
 spec:
   policyRef:
-    name: ferdium-data
+    name: ${APP}
   schedule:
-    cron: "H 3 * * *"
-    jitter: 30m
+    cron: "${KOPIUR_CRON:=H 3 * * *}"
+    jitter: "${KOPIUR_JITTER:=30m}"
     runOnCreate: false

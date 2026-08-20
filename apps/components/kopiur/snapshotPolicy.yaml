@@ -3,19 +3,19 @@
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: ferdium-data
+  name: ${APP}
 spec:
   repository:
     kind: ClusterRepository
-    name: garage-raspberrypi
+    name: ${KOPIUR_REPOSITORY:=garage-raspberrypi}
   credentialProjection:
     enabled: true
   # oliver has no CSI snapshot-controller/VolumeSnapshotClass (local-path only).
-  copyMethod: Direct
+  copyMethod: ${KOPIUR_COPYMETHOD:=Direct}
   compression:
     compressor: zstd
   sources:
     - pvc:
-        name: ferdium
+        name: ${KOPIUR_PVC:=${APP}}
   retention:
-    keepDaily: 7
+    keepDaily: ${KOPIUR_KEEPDAILY:=7}

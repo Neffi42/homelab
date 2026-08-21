@@ -3,7 +3,7 @@
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: SnapshotPolicy
 metadata:
-  name: ${APP}
+  name: ${KOPIUR_NAME:=${APP}}
 spec:
   repository:
     kind: ClusterRepository
@@ -14,8 +14,12 @@ spec:
   copyMethod: ${KOPIUR_COPYMETHOD:=Direct}
   compression:
     compressor: zstd
+  mover:
+    inheritSecurityContextFrom:
+      pvcConsumer: {}
   sources:
     - pvc:
         name: ${KOPIUR_PVC:=${APP}}
   retention:
     keepDaily: ${KOPIUR_KEEPDAILY:=7}
+    keepWeekly: ${KOPIUR_KEEPWEEKLY:=0}

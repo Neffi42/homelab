@@ -6,43 +6,52 @@ metadata:
   name: forgejo
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/kopiur
   dependsOn:
     - name: local-path
     - name: cnpg-cluster
     - name: dragonfly
     - name: kanidm
+    - name: kopiur-config
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
       name: forgejo
       namespace: forgejo
-  interval: 1h
-  path: "./apps/oliver/forgejo/forgejo/app"
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  targetNamespace: forgejo
-  timeout: 5m
----
-# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: forgejo-backup
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: forgejo
-    - name: kopiur-config
-  healthChecks:
     - apiVersion: kopiur.home-operations.com/v1alpha1
       kind: SnapshotPolicy
       name: forgejo-data
       namespace: forgejo
   interval: 1h
-  path: "./apps/oliver/forgejo/forgejo/config"
+  path: "./apps/oliver/forgejo/forgejo/app"
+  patches:
+    - patch: |
+        apiVersion: kopiur.home-operations.com/v1alpha1
+        kind: SnapshotPolicy
+        metadata:
+          name: not-used
+        spec:
+          mover:
+            securityContext:
+              runAsUser: 1000
+              runAsGroup: 1000
+              runAsNonRoot: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+              seccompProfile:
+                type: RuntimeDefault
+      target:
+        kind: SnapshotPolicy
+  postBuild:
+    substitute:
+      APP: forgejo
+      KOPIUR_PVC: gitea-shared-storage
+      KOPIUR_NAME: forgejo-data
+      KOPIUR_KEEPDAILY: "14"
+      KOPIUR_KEEPWEEKLY: "4"
+      KOPIUR_CRON: "H 2 * * *"
   prune: true
   sourceRef:
     kind: GitRepository

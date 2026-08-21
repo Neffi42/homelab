@@ -6,27 +6,11 @@ metadata:
   name: continuwuity
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/kopiur
   dependsOn:
     - name: local-path
     - name: kanidm
-  interval: 1h
-  path: ./apps/oliver/matrix/continuwuity/app
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  targetNamespace: matrix
----
-# yaml-language-server: $schema=https://schemas.neffi.fr/kustomize.toolkit.fluxcd.io/kustomization_v1.json
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: continuwuity-backup
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: continuwuity
     - name: kopiur-config
   healthChecks:
     - apiVersion: kopiur.home-operations.com/v1alpha1
@@ -34,7 +18,15 @@ spec:
       name: continuwuity-data
       namespace: matrix
   interval: 1h
-  path: ./apps/oliver/matrix/continuwuity/config
+  path: ./apps/oliver/matrix/continuwuity/app
+  postBuild:
+    substitute:
+      APP: continuwuity
+      KOPIUR_PVC: continuwuity-data
+      KOPIUR_NAME: continuwuity-data
+      KOPIUR_KEEPDAILY: "14"
+      KOPIUR_KEEPWEEKLY: "4"
+      KOPIUR_CRON: "H 5 * * *"
   prune: true
   sourceRef:
     kind: GitRepository

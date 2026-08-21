@@ -3,7 +3,7 @@
 apiVersion: kopiur.home-operations.com/v1alpha1
 kind: Restore
 metadata:
-  name: ${APP}-restore
+  name: ${KOPIUR_NAME:=${APP}}-restore
   labels:
     kustomize.toolkit.fluxcd.io/ssa: IfNotPresent
 spec:
@@ -16,7 +16,7 @@ spec:
     onMissingSnapshot: Continue
   source:
     fromPolicy:
-      name: ${APP}
+      name: ${KOPIUR_NAME:=${APP}}
       offset: 0
   target:
     populator: {}

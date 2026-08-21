@@ -6,6 +6,8 @@ metadata:
   name: pi-hole
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -15,6 +17,9 @@ spec:
       namespace: network
   interval: 1h
   path: "./apps/oliver/network/pi-hole/app"
+  postBuild:
+    substitute:
+      APP: pi-hole
   prune: true
   sourceRef:
     kind: GitRepository

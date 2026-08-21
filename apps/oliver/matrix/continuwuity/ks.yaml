@@ -8,6 +8,7 @@ metadata:
 spec:
   components:
     - ../../../../components/kopiur
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
     - name: kanidm

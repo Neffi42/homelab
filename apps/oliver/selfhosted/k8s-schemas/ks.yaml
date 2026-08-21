@@ -6,6 +6,8 @@ metadata:
   name: k8s-schemas
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -15,6 +17,9 @@ spec:
       namespace: selfhosted
   interval: 1h
   path: "./apps/oliver/selfhosted/k8s-schemas/app"
+  postBuild:
+    substitute:
+      APP: k8s-schemas
   prune: true
   sourceRef:
     kind: GitRepository

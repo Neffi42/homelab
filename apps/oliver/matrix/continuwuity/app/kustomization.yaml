@@ -5,7 +5,6 @@ kind: Kustomization
 resources:
   - ./externalSecret.yaml
   - ./helmRelease.yaml
-  - ./ociRepository.yaml
 configMapGenerator:
   - name: continuwuity-configmap
     files:

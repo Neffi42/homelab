@@ -6,10 +6,15 @@ metadata:
   name: sableclient
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/app-template
   dependsOn:
     - name: continuwuity
   interval: 1h
   path: ./apps/oliver/matrix/sableclient/app
+  postBuild:
+    substitute:
+      APP: sableclient
   prune: true
   sourceRef:
     kind: GitRepository

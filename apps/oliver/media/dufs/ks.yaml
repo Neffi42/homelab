@@ -6,6 +6,8 @@ metadata:
   name: dufs
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -15,6 +17,9 @@ spec:
       namespace: media
   interval: 1h
   path: "./apps/oliver/media/dufs/app"
+  postBuild:
+    substitute:
+      APP: dufs
   prune: true
   sourceRef:
     kind: GitRepository

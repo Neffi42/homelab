@@ -6,6 +6,8 @@ metadata:
   name: qbittorrent
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -15,6 +17,9 @@ spec:
       namespace: media
   interval: 1h
   path: "./apps/oliver/media/qbittorrent/app"
+  postBuild:
+    substitute:
+      APP: qbittorrent
   prune: true
   sourceRef:
     kind: GitRepository

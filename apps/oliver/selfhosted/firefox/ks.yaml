@@ -6,6 +6,8 @@ metadata:
   name: firefox
   namespace: flux-system
 spec:
+  components:
+    - ../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -15,6 +17,9 @@ spec:
       namespace: selfhosted
   interval: 1h
   path: "./apps/base/firefox"
+  postBuild:
+    substitute:
+      APP: firefox
   prune: true
   sourceRef:
     kind: GitRepository

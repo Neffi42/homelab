@@ -1,10 +1,11 @@
 ---
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/ocirepository_v1.json
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: kanidm
+  name: ${APP}
 spec:
-  interval: 24h
+  interval: ${APP_TEMPLATE_INTERVAL:=24h}
   layerSelector:
     mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
     operation: copy

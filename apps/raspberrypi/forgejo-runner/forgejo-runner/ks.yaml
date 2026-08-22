@@ -1,0 +1,29 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: forgejo-runner
+  namespace: flux-system
+spec:
+  components:
+    - ../../../../components/app-template
+  dependsOn:
+    - name: external-secrets-config
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: forgejo-runner
+      namespace: forgejo-runner
+  interval: 1h
+  path: "./apps/raspberrypi/forgejo-runner/forgejo-runner/app"
+  postBuild:
+    substitute:
+      APP: forgejo-runner
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: forgejo-runner
+  timeout: 5m

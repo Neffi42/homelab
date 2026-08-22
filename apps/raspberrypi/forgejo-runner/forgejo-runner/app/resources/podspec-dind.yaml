@@ -1,0 +1,63 @@
+---
+# Docker-in-Docker variant, only for jobs that request the "docker" label (image builds,
+# container: steps). Privileged DinD sidecar is scoped to this one ephemeral job pod, not the
+# long-lived runner controller.
+initContainers:
+  - name: dind
+    image: docker:29-dind
+    restartPolicy: Always
+    securityContext:
+      privileged: true
+    env:
+      - name: DOCKER_TLS_CERTDIR
+        value: /certs
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+    volumeMounts:
+      - name: docker-storage
+        mountPath: /var/lib/docker
+      - name: docker-certs
+        mountPath: /certs
+    readinessProbe:
+      exec:
+        command:
+          - sh
+          - -c
+          - test -f /certs/client/ca.pem && test -f /certs/client/cert.pem && test -f /certs/client/key.pem
+      initialDelaySeconds: 2
+      periodSeconds: 1
+containers:
+  - name: main
+    image: ghcr.io/bjw-s-labs/forgejo-runner:ubuntu-24.04
+    imagePullPolicy: IfNotPresent
+    env:
+      - name: DEBIAN_FRONTEND
+        value: noninteractive
+      - name: DOCKER_HOST
+        value: tcp://localhost:2376
+      - name: DOCKER_TLS_VERIFY
+        value: "1"
+      - name: DOCKER_CERT_PATH
+        value: /certs/client
+    volumeMounts:
+      - name: docker-certs
+        mountPath: /certs
+        readOnly: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+volumes:
+  - name: docker-storage
+    emptyDir: {}
+  - name: docker-certs
+    emptyDir: {}
+restartPolicy: Never

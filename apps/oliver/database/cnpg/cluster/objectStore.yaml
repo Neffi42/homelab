@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/barmancloud.cnpg.io/objectstore_v1.json
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: cnpg-cluster-barman
+spec:
+  retentionPolicy: "30d"
+  configuration:
+    destinationPath: s3://backups/oliver/cnpg-cluster
+    endpointURL: https://s3.pi.neffi.fr
+    s3Credentials:
+      accessKeyId:
+        name: cnpg-barman-garage-creds
+        key: AWS_ACCESS_KEY_ID
+      secretAccessKey:
+        name: cnpg-barman-garage-creds
+        key: AWS_SECRET_ACCESS_KEY
+      region:
+        name: cnpg-barman-garage-creds
+        key: REGION
+    wal:
+      compression: gzip
+    data:
+      compression: gzip

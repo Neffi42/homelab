@@ -23,6 +23,30 @@ spec:
   targetNamespace: database
   timeout: 5m
 ---
+# yaml-language-server: $schema=https://schemas.neffi.fr/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: plugin-barman-cloud
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: cnpg-operator
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: plugin-barman-cloud
+      namespace: database
+  interval: 1h
+  path: ./apps/oliver/database/cnpg/plugin-barman-cloud
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: database
+  timeout: 5m
+---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -31,8 +55,8 @@ metadata:
   namespace: flux-system
 spec:
   dependsOn:
-    - name: local-path
     - name: cnpg-operator
+    - name: plugin-barman-cloud
   healthChecks:
     - apiVersion: postgresql.cnpg.io/v1
       kind: Cluster

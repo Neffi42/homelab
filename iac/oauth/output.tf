@@ -15,3 +15,9 @@ output "continuwuity_oauth_secret" {
   value       = kanidm_oauth2_basic.continuwuity.client_secret
   sensitive   = true
 }
+
+output "jellyfin_oauth_secret" {
+  description = "OAuth2 client secret for Jellyfin"
+  value       = kanidm_oauth2_basic.jellyfin.client_secret
+  sensitive   = true
+}

@@ -74,6 +74,15 @@ resource "kanidm_group" "continuwuity_users" {
   ]
 }
 
+resource "kanidm_group" "jellyfin_users" {
+  name        = "jellyfin_users"
+  description = "Jellyfin users"
+
+  members = [
+    kanidm_person.neffi.id,
+  ]
+}
+
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"
@@ -127,6 +136,26 @@ resource "kanidm_oauth2_basic" "continuwuity" {
 
   scope_map {
     group  = kanidm_group.continuwuity_users.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "jellyfin" {
+  name        = "jellyfin"
+  displayname = "Jellyfin"
+  origin      = var.jellyfin_url
+
+  redirect_uris = [
+    "${var.jellyfin_url}sso/OID/redirect/kanidm"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  scope_map {
+    group  = kanidm_group.jellyfin_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }

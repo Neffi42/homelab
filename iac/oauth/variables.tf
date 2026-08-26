@@ -39,3 +39,9 @@ variable "continuwuity_url" {
   type        = string
   default     = "https://matrix.neffi.fr/"
 }
+
+variable "jellyfin_url" {
+  description = "Url of the Jellyfin instance to administrate"
+  type        = string
+  default     = "https://jellyfin.neffi.fr/"
+}

@@ -31,3 +31,4 @@ spec:
       - cloud
       - auth
       - matrix
+      - media

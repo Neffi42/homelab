@@ -25,8 +25,8 @@ jobs:
           echo "${{ secrets.KUBECONFIG_OLIVER }}" > "$RUNNER_TEMP/kubeconfig"
           export KUBE_CONFIG_PATH="$RUNNER_TEMP/kubeconfig"
           export TF_VAR_kanidm_token="${{ secrets.KANIDM_TOKEN }}"
-          export TF_VAR_cla_mail="${{ secrets.CLA_MAIL }}"
-          export TF_VAR_bot_oliver_mail="${{ secrets.BOT_OLIVER_MAIL }}"
+          export TF_VAR_cla_mail="${{ secrets.MAIL_CLA }}"
+          export TF_VAR_bot_oliver_mail="${{ secrets.MAIL_BOT_OLIVER }}"
           cd "$GITHUB_WORKSPACE/iac/oauth"
           tofu init -input=false -reconfigure
           tofu plan -input=false -out=tfplan

@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths: ["iac/dns/**"]
   schedule:
-    - cron: "30 * * * *" # drift: iac/dns reads live cluster state, not just git diff
+    - cron: "0 0 * * *" # drift: iac/dns reads live cluster state, not just git diff
   workflow_dispatch: {}
 
 jobs:

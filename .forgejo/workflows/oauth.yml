@@ -1,0 +1,45 @@
+name: iac-oauth
+
+on:
+  push:
+    branches: [main]
+    paths: ["iac/oauth/**"]
+  workflow_dispatch: {}
+
+jobs:
+  apply:
+    runs-on: default
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install opentofu
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh | \
+            sh -s -- --install-method standalone --install-path "$RUNNER_TEMP/bin" --skip-verify \
+              --opentofu-version 1.12.6
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: debug workspace
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la "$GITHUB_WORKSPACE/iac/oauth"
+
+      - name: apply
+        run: |
+          set -e
+          echo "${{ secrets.KUBECONFIG_OLIVER }}" > "$RUNNER_TEMP/kubeconfig"
+          export KUBE_CONFIG_PATH="$RUNNER_TEMP/kubeconfig"
+          export TF_VAR_kanidm_token="${{ secrets.KANIDM_TOKEN }}"
+          export TF_VAR_cla_mail="${{ secrets.CLA_MAIL }}"
+          export TF_VAR_bot_oliver_mail="${{ secrets.BOT_OLIVER_MAIL }}"
+          cd "$GITHUB_WORKSPACE/iac/oauth"
+          tofu init -input=false -reconfigure
+          tofu plan -input=false -out=tfplan
+          tofu apply -input=false -auto-approve tfplan
+          tofu output -json > "$RUNNER_TEMP/oauth-outputs.json"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oauth-outputs
+          path: ${{ runner.temp }}/oauth-outputs.json
+          retention-days: 1

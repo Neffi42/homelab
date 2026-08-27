@@ -12,12 +12,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: cache opentofu
+        id: cache-opentofu
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/bin
+          key: opentofu-1.12.6-${{ runner.os }}
+
       - name: install opentofu
+        if: steps.cache-opentofu.outputs.cache-hit != 'true'
         run: |
           curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh | \
             sh -s -- --install-method standalone --install-path "$RUNNER_TEMP/bin" --skip-verify \
               --opentofu-version 1.12.6
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+
+      - name: add opentofu to PATH
+        run: echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
       - name: apply
         run: |

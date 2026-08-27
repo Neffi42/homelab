@@ -19,11 +19,6 @@ jobs:
               --opentofu-version 1.12.6
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
 
-      - name: debug workspace
-        run: |
-          echo "PWD: $(pwd)"
-          ls -la "$GITHUB_WORKSPACE/iac/oauth"
-
       - name: apply
         run: |
           set -e

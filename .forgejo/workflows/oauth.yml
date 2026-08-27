@@ -33,7 +33,7 @@ jobs:
           tofu apply -input=false -auto-approve tfplan
           tofu output -json > "$RUNNER_TEMP/oauth-outputs.json"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: oauth-outputs
           path: ${{ runner.temp }}/oauth-outputs.json

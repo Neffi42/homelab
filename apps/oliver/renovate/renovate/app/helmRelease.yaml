@@ -13,7 +13,7 @@ spec:
       renovate:
         type: cronjob
         cronjob:
-          schedule: "@hourly"
+          schedule: "0 8,20 * * *"
           concurrencyPolicy: Replace
           startingDeadlineSeconds: 1800
           ttlSecondsAfterFinished: 86400

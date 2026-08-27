@@ -9,9 +9,7 @@ OpenTofu/Terraform that provisions things Flux can't (DNS records, Kanidm OAuth2
 There is no build/compile/test step — "correctness" means valid YAML/HCL that reconciles cleanly.
 
 Git remote of record is this repo's own Forgejo instance (`code.neffi.fr`), which is itself one of
-the workloads defined here (`apps/oliver/forgejo`). The working copy is a colocated `jj` (Jujutsu)
-repo on top of git — either `git` or `jj` commands work; check `jj status`/`git status` before
-assuming which was used last.
+the workloads defined here (`apps/oliver/forgejo`). Standard git, no other VCS layered on top.
 
 ## Toolchain
 

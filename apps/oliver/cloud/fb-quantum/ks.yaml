@@ -11,7 +11,7 @@ spec:
     - ../../../../components/app-template
   dependsOn:
     - name: local-path
-    - name: kopiur-config
+    # - name: kopiur-config
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease

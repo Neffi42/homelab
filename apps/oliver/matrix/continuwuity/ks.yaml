@@ -12,7 +12,7 @@ spec:
   dependsOn:
     - name: local-path
     - name: kanidm
-    - name: kopiur-config
+    # - name: kopiur-config
   healthChecks:
     - apiVersion: kopiur.home-operations.com/v1alpha1
       kind: SnapshotPolicy

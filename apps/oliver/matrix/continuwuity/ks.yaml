@@ -13,13 +13,11 @@ spec:
     - name: local-path
     - name: kanidm
     # - name: kopiur-config
-  # TEMP: garage-raspberrypi is down, see
-  # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md. Re-enable once recovered.
-  healthChecks: []
-    # - apiVersion: kopiur.home-operations.com/v1alpha1
-    #   kind: SnapshotPolicy
-    #   name: continuwuity-data
-    #   namespace: matrix
+  healthChecks:
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: continuwuity-data
+      namespace: matrix
   interval: 1h
   path: ./apps/oliver/matrix/continuwuity/app
   postBuild:

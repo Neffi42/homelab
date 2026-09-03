@@ -18,12 +18,10 @@ spec:
       kind: HelmRelease
       name: ferdium
       namespace: ferdium
-    # TEMP: garage-raspberrypi is down, see
-    # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md. Re-enable once recovered.
-    # - apiVersion: kopiur.home-operations.com/v1alpha1
-    #   kind: SnapshotPolicy
-    #   name: ferdium
-    #   namespace: ferdium
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: ferdium
+      namespace: ferdium
   interval: 1h
   path: "./apps/oliver/ferdium/ferdium/app"
   postBuild:

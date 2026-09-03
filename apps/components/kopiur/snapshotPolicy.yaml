@@ -7,7 +7,11 @@ metadata:
 spec:
   repository:
     kind: ClusterRepository
-    name: ${KOPIUR_REPOSITORY:=garage-raspberrypi}
+    # TEMP: garage-raspberrypi is down, see
+    # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md. Switch the default back
+    # once recovered.
+    # name: ${KOPIUR_REPOSITORY:=garage-raspberrypi}
+    name: ${KOPIUR_REPOSITORY:=hetzner-1}
   credentialProjection:
     enabled: true
   # oliver has no CSI snapshot-controller/VolumeSnapshotClass (local-path only).

@@ -19,10 +19,12 @@ spec:
       kind: HelmRelease
       name: forgejo
       namespace: forgejo
-    - apiVersion: kopiur.home-operations.com/v1alpha1
-      kind: SnapshotPolicy
-      name: forgejo-data
-      namespace: forgejo
+    # TEMP: garage-raspberrypi is down, see
+    # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md. Re-enable once recovered.
+    # - apiVersion: kopiur.home-operations.com/v1alpha1
+    #   kind: SnapshotPolicy
+    #   name: forgejo-data
+    #   namespace: forgejo
   interval: 1h
   path: "./apps/oliver/forgejo/forgejo/app"
   patches:

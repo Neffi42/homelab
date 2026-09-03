@@ -44,7 +44,7 @@ spec:
       host: "u662664.your-storagebox.de"
       port: 23
       username: "u662664-sub1"
-      path: "/home"
+      path: "/home/kopiur"
       auth:
         secretRef:
           name: kopiur-hetzner-1-creds

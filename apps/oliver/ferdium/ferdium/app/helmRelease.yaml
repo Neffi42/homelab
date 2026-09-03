@@ -132,7 +132,7 @@ spec:
             app:
               - path: /data
                 subPath: data
-              - path: /app/build/recipes
+              - path: /app/recipes
                 subPath: recipes
     route:
       http:

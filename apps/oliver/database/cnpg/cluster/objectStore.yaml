@@ -7,17 +7,33 @@ metadata:
 spec:
   retentionPolicy: "30d"
   configuration:
+    # TEMP: garage-raspberrypi's repeated HDD read-only-remount incidents (see
+    # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md) -- switched to the hetzner-1 Storage
+    # Box via the rclone-s3 shim (apps/oliver/storage/rclone-s3). Revert once garage is trusted
+    # again by uncommenting this block and dropping the one below.
+    # destinationPath: s3://backups/oliver/cnpg-cluster
+    # endpointURL: https://s3.pi.neffi.fr
+    # s3Credentials:
+    #   accessKeyId:
+    #     name: cnpg-barman-garage-creds
+    #     key: AWS_ACCESS_KEY_ID
+    #   secretAccessKey:
+    #     name: cnpg-barman-garage-creds
+    #     key: AWS_SECRET_ACCESS_KEY
+    #   region:
+    #     name: cnpg-barman-garage-creds
+    #     key: REGION
     destinationPath: s3://backups/oliver/cnpg-cluster
-    endpointURL: https://s3.pi.neffi.fr
+    endpointURL: http://rclone-s3.storage.svc.cluster.local:8080
     s3Credentials:
       accessKeyId:
-        name: cnpg-barman-garage-creds
+        name: cnpg-barman-hetzner-1-creds
         key: AWS_ACCESS_KEY_ID
       secretAccessKey:
-        name: cnpg-barman-garage-creds
+        name: cnpg-barman-hetzner-1-creds
         key: AWS_SECRET_ACCESS_KEY
       region:
-        name: cnpg-barman-garage-creds
+        name: cnpg-barman-hetzner-1-creds
         key: REGION
     wal:
       compression: gzip

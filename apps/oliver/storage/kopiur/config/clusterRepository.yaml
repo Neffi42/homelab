@@ -32,3 +32,37 @@ spec:
       - auth
       - matrix
       - media
+---
+# yaml-language-server: $schema=https://k8s-schemas.home-operations.com/kopiur.home-operations.com/clusterrepository_v1alpha1.json
+apiVersion: kopiur.home-operations.com/v1alpha1
+kind: ClusterRepository
+metadata:
+  name: hetzner-1
+spec:
+  backend:
+    sftp:
+      host: "u662664.your-storagebox.de"
+      port: 23
+      username: "u662664-sub1"
+      path: "/home"
+      auth:
+        secretRef:
+          name: kopiur-hetzner-1-creds
+          namespace: storage
+  encryption:
+    passwordSecretRef:
+      name: kopiur-hetzner-1-creds
+      namespace: storage
+      key: KOPIA_PASSWORD
+  create:
+    enabled: true
+  credentialProjection:
+    allowed: true
+  allowedNamespaces:
+    list:
+      - forgejo
+      - ferdium
+      - cloud
+      - auth
+      - matrix
+      - media

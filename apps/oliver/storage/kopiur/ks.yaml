@@ -34,10 +34,13 @@ spec:
   # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md) so this health check
   # never passes. Bypassed so kopiur-config (and everything depending on it)
   # can go Ready again. Re-enable once the repository recovers.
-  healthChecks: []
+  healthChecks:
     # - apiVersion: kopiur.home-operations.com/v1alpha1
     #   kind: ClusterRepository
     #   name: garage-raspberrypi
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: ClusterRepository
+      name: hetzner-1
   interval: 1h
   path: "./apps/oliver/storage/kopiur/config"
   prune: true

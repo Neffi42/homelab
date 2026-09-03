@@ -1,0 +1,94 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: rclone-s3
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: rclone-s3
+  interval: 1h
+  values:
+    controllers:
+      main:
+        type: deployment
+        containers:
+          app:
+            image:
+              repository: docker.io/rclone/rclone
+              tag: "1.75.0"
+            command: [rclone]
+            args:
+              - serve
+              - s3
+              - "hetzner_1:/home/cnpg"
+              - --addr=:8080
+              - --auth-key=$(ACCESS_KEY),$(SECRET_KEY)
+              - --force-path-style
+            env:
+              - name: RCLONE_CONFIG_HETZNER_1_TYPE
+                value: sftp
+              - name: RCLONE_CONFIG_HETZNER_1_HOST
+                value: u662664.your-storagebox.de
+              - name: RCLONE_CONFIG_HETZNER_1_PORT
+                value: "23"
+              - name: RCLONE_CONFIG_HETZNER_1_USER
+                value: u662664-sub1
+              - name: RCLONE_CONFIG_HETZNER_1_KEY_FILE
+                value: /etc/rclone/id_rsa
+              - name: RCLONE_CONFIG_HETZNER_1_KNOWN_HOSTS_FILE
+                value: /etc/rclone/known_hosts
+              - name: ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: rclone-s3-creds
+                    key: ACCESS_KEY
+              - name: SECRET_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: rclone-s3-creds
+                    key: SECRET_KEY
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &httpPort 8080
+                  initialDelaySeconds: 5
+                  periodSeconds: 15
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+
+    persistence:
+      sftp-creds:
+        type: secret
+        name: rclone-s3-sftp-creds
+        defaultMode: 0400
+        items:
+          - key: KOPIA_SFTP_KEY_DATA
+            path: id_rsa
+          - key: KOPIA_SFTP_KNOWN_HOSTS
+            path: known_hosts
+        globalMounts:
+          - path: /etc/rclone
+            readOnly: true
+
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: *httpPort

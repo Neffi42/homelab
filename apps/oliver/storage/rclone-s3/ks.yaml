@@ -1,0 +1,26 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: rclone-s3
+  namespace: flux-system
+spec:
+  components:
+    - ../../../../components/app-template
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: rclone-s3
+      namespace: storage
+  interval: 1h
+  path: ./apps/oliver/storage/rclone-s3/app
+  postBuild:
+    substitute:
+      APP: rclone-s3
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: storage

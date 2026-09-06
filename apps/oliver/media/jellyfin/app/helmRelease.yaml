@@ -31,6 +31,5 @@ spec:
         storageClass: local-path-oliver
       media:
         enabled: true
-        accessMode: ReadWriteOnce
-        storageClass: local-path-oliver-ssd
+        existingClaim: media
         readOnly: true

@@ -84,9 +84,7 @@ spec:
               - path: /config
       downloads:
         type: persistentVolumeClaim
-        storageClass: local-path-oliver-ssd
-        accessMode: ReadWriteOnce
-        size: 10Gi
+        existingClaim: media
         advancedMounts:
           main:
             qbittorrent:

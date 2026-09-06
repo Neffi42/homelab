@@ -57,13 +57,12 @@ spec:
     persistence:
       data:
         type: persistentVolumeClaim
-        storageClass: local-path-oliver-ssd
-        accessMode: ReadWriteOnce
-        size: 100Mi
+        existingClaim: media
         advancedMounts:
           dufs:
             app:
               - path: /data
+                readOnly: true
     route:
       http:
         kind: HTTPRoute

@@ -4,6 +4,7 @@ kind: Kustomization
 
 resources:
   - ./namespace.yaml
+  - ./pvc.yaml
   - ./jellyfin/ks.yaml
   - ./dufs/ks.yaml
   - ./qbittorrent/ks.yaml

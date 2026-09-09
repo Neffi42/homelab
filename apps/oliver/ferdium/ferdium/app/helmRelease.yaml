@@ -11,6 +11,11 @@ spec:
   driftDetection:
     mode: enabled
   values:
+    defaultPodOptions:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
     controllers:
       ferdium:
         strategy: RollingUpdate

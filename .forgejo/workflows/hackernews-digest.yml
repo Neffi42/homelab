@@ -1,0 +1,17 @@
+name: hackernews-digest
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  post:
+    runs-on: default
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: post digest
+        run: python3 .forgejo/scripts/hackernews-digest.py
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}

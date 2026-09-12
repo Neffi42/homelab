@@ -1,0 +1,27 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: go2rtc
+  namespace: flux-system
+spec:
+  components:
+    - ../../../../components/app-template
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: go2rtc
+      namespace: home
+  interval: 1h
+  path: "./apps/oliver/home/go2rtc/app"
+  postBuild:
+    substitute:
+      APP: go2rtc
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: home
+  timeout: 5m

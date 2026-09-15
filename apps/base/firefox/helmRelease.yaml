@@ -24,7 +24,7 @@ spec:
           app:
             image:
               repository: lscr.io/linuxserver/firefox
-              tag: 1153.0.4
+              tag: 1155.0.1
             restartPolicy: Never
             env:
               - name: TZ

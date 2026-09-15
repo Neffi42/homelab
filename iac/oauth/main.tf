@@ -80,6 +80,7 @@ resource "kanidm_group" "jellyfin_users" {
 
   members = [
     kanidm_person.neffi.id,
+    kanidm_person.cla.id,
   ]
 }
 

@@ -47,8 +47,8 @@ spec:
               capabilities: { drop: ["ALL"] }
           runner:
             image:
-              repository: registry.erwanleboucher.dev/eleboucher/runner
-              tag: "12.13.0"
+              repository: data.forgejo.org/forgejo/runner
+              tag: "13.1.0"
             command:
               - sh
               - -ec

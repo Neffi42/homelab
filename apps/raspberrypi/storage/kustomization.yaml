@@ -5,4 +5,3 @@ kind: Kustomization
 resources:
   - ../../base/storage
   - ./local-path/ks.yaml
-  - ./garage/ks.yaml

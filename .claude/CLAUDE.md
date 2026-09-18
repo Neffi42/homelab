@@ -103,8 +103,10 @@ addresses) stay in that cluster's own overlay/HelmRelease.
 - Auth: Kanidm (`apps/oliver/auth/kanidm`) is the OIDC provider; app OAuth2 clients/groups are
   provisioned in `iac/oauth`, not in the app's own Kustomization — adding a new OIDC-integrated
   app means adding a `kanidm_oauth2_basic` + `kanidm_group` there too.
-- Backups: kopiur (`apps/oliver/storage/kopiur`) backs up PVCs to garage's `backups` bucket on
-  raspberrypi via the `garage-raspberrypi` `ClusterRepository`. `oliver` has no CSI
+- Backups: kopiur (`apps/oliver/storage/kopiur`) backs up PVCs to the `hetzner-1` `ClusterRepository`
+  (a Hetzner Storage Box over SFTP) — the sole backup target now; the earlier garage-on-raspberrypi
+  repository was decommissioned after repeated HDD read-only-remount incidents (see
+  `docs/incidents/2026-09-03-garage-hdd-emergency-ro.md`). `oliver` has no CSI
   snapshot-controller/`VolumeSnapshotClass` (`local-path` only) — every `SnapshotPolicy` needs
   `copyMethod: Direct`. The mover's default UID (`65532`) frequently can't read an app's real data
   (rootless images running as `1000`, `0700`-permission dirs like SSH keys) — check the live pod's
@@ -138,7 +140,7 @@ actually used here — prefer it over wiring a Component into the app's own `kus
 
 `apps/components/kopiur` is the current example: `Restore` (passive `target.populator: {}`) +
 `SnapshotPolicy` + `SnapshotSchedule` for backing up one PVC via kopiur (`apps/oliver/storage/kopiur`)
-to the `garage-raspberrypi` `ClusterRepository`. The app's own chart keeps owning its PVC normally
+to the `hetzner-1` `ClusterRepository`. The app's own chart keeps owning its PVC normally
 (`type: persistentVolumeClaim`, no `existingClaim`/`dataSourceRef`) — the `SnapshotPolicy` just
 points `sources[].pvc.name` at it via `${KOPIUR_PVC:=${APP}}`.
 

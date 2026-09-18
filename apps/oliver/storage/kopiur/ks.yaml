@@ -30,14 +30,7 @@ metadata:
 spec:
   dependsOn:
     - name: kopiur
-  # TEMP: garage-raspberrypi is down (disk I/O errors, 3rd occurrence, see
-  # docs/incidents/2026-09-03-garage-hdd-emergency-ro.md) so this health check
-  # never passes. Bypassed so kopiur-config (and everything depending on it)
-  # can go Ready again. Re-enable once the repository recovers.
   healthChecks:
-    # - apiVersion: kopiur.home-operations.com/v1alpha1
-    #   kind: ClusterRepository
-    #   name: garage-raspberrypi
     - apiVersion: kopiur.home-operations.com/v1alpha1
       kind: ClusterRepository
       name: hetzner-1

@@ -45,18 +45,3 @@ jobs:
           tofu init -input=false -reconfigure
           tofu plan -input=false -parallelism=1 -out=tfplan
           tofu apply -input=false -auto-approve -parallelism=1 tfplan
-
-      - name: apply - raspberrypi
-        run: |
-          set -e
-          echo "${{ secrets.KUBECONFIG_RASPBERRYPI }}" > "$RUNNER_TEMP/kubeconfig"
-          export KUBE_CONFIG_PATH="$RUNNER_TEMP/kubeconfig"
-          export TF_VAR_pihole_url="${{ secrets.PIHOLE_URL }}"
-          export TF_VAR_pihole_password="${{ secrets.PIHOLE_PASSWORD }}"
-          export TF_VAR_ovh_client_id="${{ secrets.OVH_CLIENT_ID }}"
-          export TF_VAR_ovh_client_secret="${{ secrets.OVH_CLIENT_SECRET }}"
-          export TF_VAR_ovh_target_ip="${{ secrets.OVH_TARGET_IP }}"
-          cd "$GITHUB_WORKSPACE/iac/dns"
-          tofu init -input=false -reconfigure
-          tofu plan -input=false -parallelism=1 -out=tfplan
-          tofu apply -input=false -auto-approve -parallelism=1 tfplan

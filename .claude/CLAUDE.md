@@ -37,8 +37,6 @@ on new files of the same kind — they're what gives editors real completion/val
 
 ```
 apps/
-  base/<category>/<app>/       # cluster-agnostic manifests, still used for chart/CRD reuse
-                                # within oliver (not cross-cluster anymore — there's one cluster)
   oliver/<category>/<app>/     # the cluster's tree — covers both nodes; per-node scheduling
                                 # (nodeSelector/tolerations) lives inside individual app manifests
   components/<name>/           # shared Kustomize Components (kind: Component), see below
@@ -74,12 +72,6 @@ Apps generally nest three levels under `apps/oliver/<category>/`:
 Some apps split `app/` (workload) from `config/` (CRs applied after, e.g. cert-manager's
 ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustomizations with a
 `dependsOn` between them — follow the existing app's split rather than inventing a new shape.
-
-Apps that just consume a `base/` app instead of defining their own reference it via relative path,
-e.g. `apps/oliver/storage/local-path/kustomization.yaml` → `../../../base/storage/local-path`. When
-adding a shared component, put the reusable bits in `apps/base/...` and have `apps/oliver/`'s
-`kustomization.yaml` pull it in; environment-specific values (storage class, hostnames, addresses)
-stay in oliver's own overlay/HelmRelease.
 
 ### Conventions to match
 
@@ -169,7 +161,7 @@ confirming the target StorageClass's provisioner actually implements populators.
 ## OpenTofu stacks (`iac/`)
 
 Two independent stacks, each with its own state, run manually (not via an in-cluster controller —
-the `terraform` namespace under `apps/base/terraform` just hosts the Kubernetes-secret state
+the `terraform` namespace under `apps/oliver/terraform` just hosts the Kubernetes-secret state
 backend):
 
 - `iac/dns` — derives DNS records from live cluster state: reads `HTTPRoute` objects via the

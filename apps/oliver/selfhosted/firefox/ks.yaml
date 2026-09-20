@@ -7,7 +7,7 @@ metadata:
   namespace: flux-system
 spec:
   components:
-    - ../../components/app-template
+    - ../../../../components/app-template
   dependsOn:
     - name: local-path
   healthChecks:
@@ -16,7 +16,7 @@ spec:
       name: firefox
       namespace: selfhosted
   interval: 1h
-  path: "./apps/base/firefox"
+  path: "./apps/oliver/selfhosted/firefox/app"
   postBuild:
     substitute:
       APP: firefox

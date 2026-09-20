@@ -12,7 +12,7 @@ spec:
       name: reloader
       namespace: kube-system
   interval: 1h
-  path: "./apps/base/kube-system/reloader"
+  path: "./apps/oliver/kube-system/reloader/app"
   prune: true
   sourceRef:
     kind: GitRepository

@@ -2,13 +2,17 @@
 # Docker-in-Docker variant, only for jobs that request the "docker" label (image builds,
 # container: steps). Privileged DinD sidecar is scoped to this one ephemeral job pod, not the
 # long-lived runner controller.
-nodeSelector:
-  kubernetes.io/hostname: raspberrypi
-tolerations:
-  - key: dedicated
-    operator: Equal
-    value: slow-node
-    effect: NoSchedule
+# Temporarily runs on oliver instead of raspberrypi: the Pi is on a different LAN for
+# now (cross-node pod networking/DNS to CoreDNS doesn't work), see
+# docs/migrations/raspberrypi-to-oliver-node-merge.md. Re-enable once the Pi is back
+# on oliver's LAN.
+# nodeSelector:
+#   kubernetes.io/hostname: raspberrypi
+# tolerations:
+#   - key: dedicated
+#     operator: Equal
+#     value: slow-node
+#     effect: NoSchedule
 initContainers:
   - name: dind
     image: docker:29-dind

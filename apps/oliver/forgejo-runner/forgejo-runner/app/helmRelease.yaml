@@ -19,13 +19,17 @@ spec:
         pod:
           labels:
             app.kubernetes.io/component: forgejo-runner
-          nodeSelector:
-            kubernetes.io/hostname: raspberrypi
-          tolerations:
-            - key: dedicated
-              operator: Equal
-              value: slow-node
-              effect: NoSchedule
+          # Temporarily runs on oliver instead of raspberrypi: the Pi is on a different
+          # LAN for now (cross-node pod networking/DNS to CoreDNS doesn't work), see
+          # docs/migrations/raspberrypi-to-oliver-node-merge.md. Re-enable once the Pi
+          # is back on oliver's LAN.
+          # nodeSelector:
+          #   kubernetes.io/hostname: raspberrypi
+          # tolerations:
+          #   - key: dedicated
+          #     operator: Equal
+          #     value: slow-node
+          #     effect: NoSchedule
           securityContext:
             fsGroup: 1000
             fsGroupChangePolicy: OnRootMismatch

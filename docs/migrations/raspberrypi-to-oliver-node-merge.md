@@ -13,21 +13,26 @@ dissolve `raspberrypi` as an independent cluster and rejoin the physical Pi to `
 k3s agent node, while explicitly keeping the Forgejo runner alive and pinned to that hardware (the
 Pi's SD card has almost no free space, so nothing that needs a PVC should ever land there).
 
-This migration also switches `oliver`'s Gateway API controller from Envoy Gateway to Traefik —
-needed because a single merged cluster should run one shared ingress controller — plus a
-compensating change for Pi-hole's DNS-over-UDP listener, since Traefik's Gateway API provider
-doesn't implement `UDPRoute`.
+**No ingress controller change is part of this migration.** `oliver` keeps Envoy Gateway as its
+only Gateway API controller — Traefik is not installed on `oliver`. `raspberrypi`'s own Traefik
+install is not carried over either — it's retired outright along with the rest of
+`apps/raspberrypi/network/` (see below), since it has zero HTTPRoutes attached and the node
+becomes a plain tainted CI-only agent with no ingress workload of its own. There is therefore no
+compensating change needed for Pi-hole's DNS-over-UDP listener — Envoy Gateway on `oliver` already
+handles that today and nothing about it changes.
+
+## Execution model
+
+Any command that runs directly on a node's host OS — not through `kubectl`/`flux`/`tofu` against
+the cluster, but actually executed on the Pi or on `oliver`'s host (installing/uninstalling k3s,
+`k3s-uninstall.sh`, the `curl | sh` k3s installer, checking `/var/lib/rancher/k3s/server/node-token`,
+etc.) — is run by **you**, not by the assistant. The assistant's job in those steps is to hand you
+the exact command(s) to paste in; it does not SSH in or execute them itself. Everything else
+(git commits, `kubectl`/`flux`/`tofu` operations against a live `KUBECONFIG` context) is done by
+the assistant as usual.
 
 ## Decisions already made (don't re-litigate)
 
-- **Traefik switch on `oliver` happens first, as its own standalone change**, fully per
-  `docs/migrations/oliver-envoy-to-traefik.md` (that doc is the plan for this part — execute it
-  verbatim, just re-check the Traefik chart version pin and Traefik app version ≥ 3.6 for
-  `BackendTLSPolicy` at execution time, since Renovate has likely moved the pin since that doc was
-  written). Verify it fully (that doc's own §5) before starting the node merge.
-- **Pi-hole DNS-over-UDP**: per the same doc, drop the `UDPRoute`, give the `dns-udp` Service
-  `type: LoadBalancer` directly (k3s ServiceLB/klipper already backs every other Gateway-fronted
-  Service, so this is zero new components).
 - **The Pi rejoins as a plain k3s *agent*, keeping its hostname `raspberrypi`.** Its current k3s
   install is a standalone *server* (embedded SQLite, no join flags) — that role is destroyed, not
   merged. `k3s-uninstall.sh` on the Pi, then a fresh `k3s agent` install pointed at `oliver`'s LAN
@@ -53,6 +58,7 @@ doesn't implement `UDPRoute`.
   independent SSH/admin access to the Pi.
 - **`*.pi.neffi.fr` is retired outright** — its `Gateway`, `Certificate`, and OVH DNS-01 credentials
   are deleted with the rest of `apps/raspberrypi/network/`; nothing serves that hostname today.
+  Its Traefik install goes with it — not merged into `oliver`, per the Context note above.
 
 ## What carries over unchanged
 
@@ -67,13 +73,7 @@ doesn't implement `UDPRoute`.
 
 ## Steps
 
-### Phase 1 — Traefik switch on `oliver` (standalone, do this first)
-
-Execute `docs/migrations/oliver-envoy-to-traefik.md` in full, including its own verify steps.
-Do not proceed to Phase 2 until `tofu -chdir=iac/dns plan` shows no diff and every route/DNS
-check in that doc's §5 passes.
-
-### Phase 2 — Land the Forgejo runner's new home on `oliver` (git only, no node change yet)
+### Phase 1 — Land the Forgejo runner's new home on `oliver` (git only, no node change yet)
 
 1. Copy `apps/raspberrypi/forgejo-runner/` → `apps/oliver/forgejo-runner/` unchanged, except:
    - `ks.yaml`: `path` fields updated to `./apps/oliver/forgejo-runner/...`.
@@ -101,15 +101,21 @@ check in that doc's §5 passes.
 3. Commit. This Kustomization will apply — the `HelmRelease`/`ExternalSecret` reconcile fine — but
    the actual pod stays `Pending` (no node named `raspberrypi` exists in `oliver`'s cluster yet).
    That's expected; the `healthChecks` timeout on this Kustomization will just show not-Ready until
-   Phase 3 completes. Do **not** delete `apps/raspberrypi/forgejo-runner/` yet — the live raspberrypi
-   cluster still needs its own working runner until the physical cutover in Phase 3.
+   Phase 2 completes. Do **not** delete `apps/raspberrypi/forgejo-runner/` yet — the live raspberrypi
+   cluster still needs its own working runner until the physical cutover in Phase 2.
 
-### Phase 3 — Physical node cutover
+### Phase 2 — Physical node cutover
+
+Per the Execution model above: the assistant gives you the exact commands below; you run them
+yourself on the Pi (and read the token off `oliver`'s host) — the assistant does not SSH in.
 
 1. On the Pi: back up nothing — confirmed no PVC/live data exists under any workload there.
-2. Stop and fully remove the Pi's standalone k3s server: `/usr/local/bin/k3s-uninstall.sh` (wipes
-   its embedded datastore, Flux install, and every resource that was ever applied to it — this *is*
-   the raspberrypi cluster's teardown, no separate `flux uninstall` needed).
+2. Stop and fully remove the Pi's standalone k3s server. Run on the Pi:
+   ```sh
+   sudo /usr/local/bin/k3s-uninstall.sh
+   ```
+   This wipes its embedded datastore, Flux install, and every resource that was ever applied to it
+   — this *is* the raspberrypi cluster's teardown, no separate `flux uninstall` needed.
 3. Create the new agent config, replacing `k3s/raspberrypi/config.yaml` with
    `k3s/oliver/agents/raspberrypi.yaml` (new file, "for reference" like the existing per-cluster
    configs — not itself auto-applied):
@@ -119,35 +125,43 @@ check in that doc's §5 passes.
    node-taint:
      - "dedicated=raspberrypi-ci:NoSchedule"
    ```
-4. Install k3s agent on the Pi (`curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.42:6443 K3S_TOKEN=<token> sh -s - agent --node-taint dedicated=raspberrypi-ci:NoSchedule`),
-   keeping the existing hostname `raspberrypi`.
-5. Verify: `kubectl --context oliver get nodes -o wide` shows `raspberrypi` `Ready`, and
+4. Fetch the join token. Run on `oliver`'s host:
+   ```sh
+   sudo cat /var/lib/rancher/k3s/server/node-token
+   ```
+5. Install the k3s agent, keeping the existing hostname `raspberrypi`. Run on the Pi (substitute
+   the token from step 4):
+   ```sh
+   curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.42:6443 K3S_TOKEN=<token> sh -s - agent \
+     --node-taint dedicated=raspberrypi-ci:NoSchedule
+   ```
+6. Verify: `kubectl --context oliver get nodes -o wide` shows `raspberrypi` `Ready`, and
    `kubectl --context oliver describe node raspberrypi` shows the taint.
-6. Force Flux to reconcile: `flux --context oliver reconcile kustomization forgejo-runner -n flux-system`.
+7. Force Flux to reconcile: `flux --context oliver reconcile kustomization forgejo-runner -n flux-system`.
    Confirm the runner pod schedules onto `raspberrypi`:
    `kubectl --context oliver get pods -n forgejo-runner -o wide`.
-7. Confirm CI actually works end-to-end: push a trivial commit and watch a `.forgejo/workflows/*`
+8. Confirm CI actually works end-to-end: push a trivial commit and watch a `.forgejo/workflows/*`
    run (`runs-on: default`) complete successfully against the relocated runner.
-8. Only once that's green: delete the old registration path — remove
-   `apps/raspberrypi/forgejo-runner/` from git (it's about to be deleted wholesale in Phase 4 anyway,
+9. Only once that's green: delete the old registration path — remove
+   `apps/raspberrypi/forgejo-runner/` from git (it's about to be deleted wholesale in Phase 3 anyway,
    but it's already inert since the raspberrypi cluster no longer exists to run it).
 
-### Phase 4 — Retire everything else `raspberrypi`-specific
+### Phase 3 — Retire everything else `raspberrypi`-specific
 
-Delete outright (all already confirmed unused beyond what moved in Phase 2-3):
+Delete outright (all already confirmed unused beyond what moved in Phase 1-2):
 - `apps/raspberrypi/` in its entirety (forgejo-runner already relocated; `network/` — Traefik,
   `Gateway/private`, `*.pi.neffi.fr` `Certificate`, OVH DNS-01 `ExternalSecret`; `security/` — its
   own `bitwarden-secretsmanager` `ClusterSecretStore`; `storage/` — `local-path-hdd`/`local-path-sd`
   per the decision above; `terraform/` — passthrough namespace only).
 - `flux/raspberrypi/` (bootstrap output — identical Flux components to oliver's, only `path` differed).
-- `k3s/raspberrypi/config.yaml` (superseded by `k3s/oliver/agents/raspberrypi.yaml` from Phase 3).
+- `k3s/raspberrypi/config.yaml` (superseded by `k3s/oliver/agents/raspberrypi.yaml` from Phase 2).
 
-### Phase 5 — CI and DNS cleanup
+### Phase 4 — CI and DNS cleanup
 
 1. **`.forgejo/workflows/dns.yml`: delete the entire `apply - raspberrypi` step.** This is the
    job step that runs `tofu -chdir=iac/dns apply` a second time against
    `secrets.KUBECONFIG_RASPBERRYPI` specifically so `iac/dns` can resolve that cluster's own
-   `private` Gateway IP for Pi-hole. Once `raspberrypi` stops being its own cluster (Phase 3), that
+   `private` Gateway IP for Pi-hole. Once `raspberrypi` stops being its own cluster (Phase 2), that
    context no longer exists and this step would just fail — remove it outright so only
    `apply - oliver` remains in the `apply` job.
 2. Remove the now-dead `KUBECONFIG_RASPBERRYPI` secret from the Forgejo repo's secrets (manual, via
@@ -158,7 +172,7 @@ Delete outright (all already confirmed unused beyond what moved in Phase 2-3):
    managed that hostname (no HTTPRoute ever existed for it), so this is just a manual sanity check,
    not a Terraform change.
 
-### Phase 6 — Update `AGENTS.md` / `.claude/CLAUDE.md`
+### Phase 5 — Update `AGENTS.md` / `.claude/CLAUDE.md`
 
 Rewrite the two-cluster framing to a single-cluster, two-node model:
 - **What this is**: "two Flux-managed k3s clusters" → "one Flux-managed k3s cluster (`oliver`),
@@ -168,7 +182,8 @@ Rewrite the two-cluster framing to a single-cluster, two-node model:
   longer for cross-*cluster* reuse). Remove `flux/raspberrypi/` and `k3s/raspberrypi/` from the
   layout diagram; note `k3s/oliver/agents/raspberrypi.yaml` as the new per-node agent config location.
 - **Gateway section**: drop "`raspberrypi` mirrors the `private` half only" — there's only one
-  `private`/`public` Gateway pair now, both on Traefik (post-Phase-1).
+  `private`/`public` Gateway pair now, both still on Envoy Gateway, unchanged (this migration never
+  touches `oliver`'s ingress controller).
 - **New bullet**: document the `dedicated=raspberrypi-ci:NoSchedule` taint convention — node
   `raspberrypi` only runs workloads that explicitly tolerate it and need no PVC (currently just the
   Forgejo runner); nothing else should ever be scheduled there given its SD card and the HDD's
@@ -191,13 +206,14 @@ Rewrite the two-cluster framing to a single-cluster, two-node model:
    guarantee and skip an active test).
 8. `git grep -i raspberrypi` repo-wide — only expected hits remain (historical `docs/incidents/*.md`,
    the new `k3s/oliver/agents/raspberrypi.yaml`, and the taint/nodeSelector literals).
+9. `kubectl --context oliver get gatewayclass,gateway -A` — Envoy Gateway is still the only
+   Gateway API controller in the cluster; no Traefik resources exist anywhere.
 
 ## Rollback
 
-Phase 1 has its own rollback (revert both its commits — see that doc). For Phases 2-6: this is a
-one-way physical migration once Phase 3 destroys the Pi's standalone k3s server — rolling back means
-re-provisioning `raspberrypi` as a fresh standalone k3s server and re-bootstrapping Flux against
-`./flux/raspberrypi` (recoverable from git history if the tree is restored via `git revert`), then
-reverting the git commits from Phases 2-6. Given how little state raspberrypi actually holds, this
-is low-risk either direction — the only genuinely destructive, hard-to-reverse step is Phase 3.2
-(`k3s-uninstall.sh` on the Pi); everything else is git-revertible.
+This is a one-way physical migration once Phase 2 destroys the Pi's standalone k3s server. Rolling
+back means re-provisioning `raspberrypi` as a fresh standalone k3s server and re-bootstrapping Flux
+against `./flux/raspberrypi` (recoverable from git history if the tree is restored via `git revert`),
+then reverting the git commits from Phases 1-5. Given how little state raspberrypi actually holds,
+this is low-risk either direction — the only genuinely destructive, hard-to-reverse step is
+Phase 2.2 (`k3s-uninstall.sh` on the Pi); everything else is git-revertible.

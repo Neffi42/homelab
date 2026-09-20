@@ -35,19 +35,25 @@ the assistant as usual.
 
 - **The Pi rejoins as a plain k3s *agent*, keeping its hostname `raspberrypi`.** Its current k3s
   install is a standalone *server* (embedded SQLite, no join flags) — that role is destroyed, not
-  merged. `k3s-uninstall.sh` on the Pi, then a fresh `k3s agent` install pointed at `oliver`'s LAN
-  IP (`192.168.1.42:6443` — same LAN, no reason to hairpin through Tailscale for cluster traffic).
+  merged. `k3s-uninstall.sh` on the Pi, then a fresh `k3s agent` install pointed at `oliver` (see
+  the Tailscale-IP decision below for the actual address).
 - **The Pi is tainted CI-only.** Because its SD card has almost no headroom and its old HDD
   (`/mnt/nabil/k3s`) has a documented history of read-only-remount failures
   (`docs/incidents/2026-09-03-garage-hdd-emergency-ro.md`), no workload should ever be scheduled
   there by accident — including via `oliver`'s untopology-restricted default `local-path`
   StorageClass, which today has no `allowedTopologies` and could otherwise bind anywhere. Fix: a
-  node taint (`dedicated=raspberrypi-ci:NoSchedule`) baked into the agent's k3s config, with a
+  node taint (`dedicated=slow-node:NoSchedule`) baked into the agent's k3s config, with a
   matching `toleration` + `nodeSelector: {kubernetes.io/hostname: raspberrypi}` added *only* to the
   Forgejo runner controller pod and its two ephemeral job-pod templates (the only workloads that
   need no PVC). Nothing else gets the toleration, so nothing else can land there — this is a
   general convention, not a one-off hack: any future non-PVC workload could opt in the same way,
   but nothing does today.
+- **The agent joins via `oliver`'s Tailscale IP (`100.110.121.73`), not its LAN IP.** `k3s/raspberrypi/config.yaml`
+  carries `server:`/`node-taint:` (no secrets — the join token is never written to this file, it's
+  passed as `K3S_TOKEN` on the install command line only) and is copied verbatim to
+  `/etc/rancher/k3s/config.yaml` on the Pi before running the installer. The old standalone-server-only
+  keys (`write-kubeconfig-group`, `disable`, `tls-san`) are dropped from the file — none of them do
+  anything in agent mode.
 - **`raspberrypi`'s own StorageClasses (`local-path-hdd`, `local-path-sd`) are dropped, not
   merged.** Nothing consumes them today (confirmed: `garage` was their only consumer and it's gone),
   and the taint above means no PVC-needing pod will ever be scheduled onto that node anyway, so
@@ -87,7 +93,7 @@ the assistant as usual.
            tolerations:
              - key: dedicated
                operator: Equal
-               value: raspberrypi-ci
+               value: slow-node
                effect: NoSchedule
      ```
      (adjust the controller key to match whatever it's actually named in the existing chart values).
@@ -116,24 +122,26 @@ yourself on the Pi (and read the token off `oliver`'s host) — the assistant do
    ```
    This wipes its embedded datastore, Flux install, and every resource that was ever applied to it
    — this *is* the raspberrypi cluster's teardown, no separate `flux uninstall` needed.
-3. Create the new agent config, replacing `k3s/raspberrypi/config.yaml` with
-   `k3s/oliver/agents/raspberrypi.yaml` (new file, "for reference" like the existing per-cluster
-   configs — not itself auto-applied):
-   ```yaml
-   server: "https://192.168.1.42:6443"
-   token: "<from oliver:/var/lib/rancher/k3s/server/node-token, out of band>"
+3. `k3s/raspberrypi/config.yaml` already holds the new agent config (`server:` pointed at oliver's
+   Tailscale IP, `node-taint:`). Copy it verbatim to `/etc/rancher/k3s/config.yaml` on the Pi. Run
+   on the Pi:
+   ```sh
+   sudo mkdir -p /etc/rancher/k3s
+   sudo tee /etc/rancher/k3s/config.yaml <<'EOF'
+   server: "https://100.110.121.73:6443"
    node-taint:
-     - "dedicated=raspberrypi-ci:NoSchedule"
+     - "dedicated=slow-node:NoSchedule"
+   EOF
    ```
 4. Fetch the join token. Run on `oliver`'s host:
    ```sh
    sudo cat /var/lib/rancher/k3s/server/node-token
    ```
-5. Install the k3s agent, keeping the existing hostname `raspberrypi`. Run on the Pi (substitute
-   the token from step 4):
+5. Install the k3s agent, keeping the existing hostname `raspberrypi`. `server`/`node-taint` come
+   from `/etc/rancher/k3s/config.yaml` (step 3) — only the token needs to be on the command line.
+   Run on the Pi (substitute the token from step 4):
    ```sh
-   curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.42:6443 K3S_TOKEN=<token> sh -s - agent \
-     --node-taint dedicated=raspberrypi-ci:NoSchedule
+   curl -sfL https://get.k3s.io | K3S_TOKEN=<token> sh -s - agent
    ```
 6. Verify: `kubectl --context oliver get nodes -o wide` shows `raspberrypi` `Ready`, and
    `kubectl --context oliver describe node raspberrypi` shows the taint.
@@ -154,7 +162,10 @@ Delete outright (all already confirmed unused beyond what moved in Phase 1-2):
   own `bitwarden-secretsmanager` `ClusterSecretStore`; `storage/` — `local-path-hdd`/`local-path-sd`
   per the decision above; `terraform/` — passthrough namespace only).
 - `flux/raspberrypi/` (bootstrap output — identical Flux components to oliver's, only `path` differed).
-- `k3s/raspberrypi/config.yaml` (superseded by `k3s/oliver/agents/raspberrypi.yaml` from Phase 2).
+
+`k3s/raspberrypi/config.yaml` is **not** deleted — it already holds the node's new agent config
+from Phase 2 and stays, same path, as the per-node reference file (mirrors `k3s/oliver/config.yaml`
+for the control-plane node).
 
 ### Phase 4 — CI and DNS cleanup
 
@@ -179,12 +190,13 @@ Rewrite the two-cluster framing to a single-cluster, two-node model:
   spanning an amd64 control-plane node and an arm64 agent node (`raspberrypi`, tainted CI-only)".
 - **Repository layout**: drop the `apps/<cluster>/` framing implying two peer clusters — now just
   `apps/oliver/<category>/<app>/` (mention `apps/base/` still exists for chart/CRD reuse, just no
-  longer for cross-*cluster* reuse). Remove `flux/raspberrypi/` and `k3s/raspberrypi/` from the
-  layout diagram; note `k3s/oliver/agents/raspberrypi.yaml` as the new per-node agent config location.
+  longer for cross-*cluster* reuse). Remove `flux/raspberrypi/` from the layout diagram;
+  `k3s/raspberrypi/config.yaml` stays as-is, re-described as the agent node's config (sibling to
+  `k3s/oliver/config.yaml` for the control-plane node) rather than a standalone cluster's.
 - **Gateway section**: drop "`raspberrypi` mirrors the `private` half only" — there's only one
   `private`/`public` Gateway pair now, both still on Envoy Gateway, unchanged (this migration never
   touches `oliver`'s ingress controller).
-- **New bullet**: document the `dedicated=raspberrypi-ci:NoSchedule` taint convention — node
+- **New bullet**: document the `dedicated=slow-node:NoSchedule` taint convention — node
   `raspberrypi` only runs workloads that explicitly tolerate it and need no PVC (currently just the
   Forgejo runner); nothing else should ever be scheduled there given its SD card and the HDD's
   documented reliability history.
@@ -205,7 +217,7 @@ Rewrite the two-cluster framing to a single-cluster, two-node model:
    unpinned test pod cluster-wide and confirm it never lands there (or just rely on the taint's
    guarantee and skip an active test).
 8. `git grep -i raspberrypi` repo-wide — only expected hits remain (historical `docs/incidents/*.md`,
-   the new `k3s/oliver/agents/raspberrypi.yaml`, and the taint/nodeSelector literals).
+   `k3s/raspberrypi/config.yaml`, and the taint/nodeSelector literals).
 9. `kubectl --context oliver get gatewayclass,gateway -A` — Envoy Gateway is still the only
    Gateway API controller in the cluster; no Traefik resources exist anywhere.
 

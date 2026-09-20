@@ -4,7 +4,7 @@ nodeSelector:
 tolerations:
   - key: dedicated
     operator: Equal
-    value: raspberrypi-ci
+    value: slow-node
     effect: NoSchedule
 containers:
   - name: main

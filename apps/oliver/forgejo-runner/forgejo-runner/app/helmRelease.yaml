@@ -24,7 +24,7 @@ spec:
           tolerations:
             - key: dedicated
               operator: Equal
-              value: raspberrypi-ci
+              value: slow-node
               effect: NoSchedule
           securityContext:
             fsGroup: 1000

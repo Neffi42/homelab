@@ -7,7 +7,7 @@ nodeSelector:
 tolerations:
   - key: dedicated
     operator: Equal
-    value: raspberrypi-ci
+    value: slow-node
     effect: NoSchedule
 initContainers:
   - name: dind

@@ -1,6 +1,7 @@
 server:
   externalUrl: "https://cloud.neffi.fr"
   database: "/db/database.db"
+  disablePreviews: true
   sources:
     - path: /files
       config:

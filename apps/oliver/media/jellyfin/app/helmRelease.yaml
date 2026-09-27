@@ -15,7 +15,7 @@ spec:
   values:
     image:
       repository: docker.io/jellyfin/jellyfin
-      tag: "10.11.11@sha256:0b901391a662862eddb5dc55d244d7883cbb6236ef5b9a6ea82abc78a89819f0"
+      tag: "12.1@sha256:78d3ea1207d1322471fcac39a614f004f2ccf7e878f95ab2977d752f07e4dd7e"
     httpRoute:
       enabled: true
       parentRefs:

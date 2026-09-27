@@ -160,3 +160,63 @@ resource "kanidm_oauth2_basic" "jellyfin" {
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }
+
+resource "kanidm_oauth2_basic" "go2rtc" {
+  name        = "go2rtc"
+  displayname = "go2rtc"
+  origin      = var.go2rtc_url
+
+  redirect_uris = [
+    "${var.go2rtc_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "dufs" {
+  name        = "dufs"
+  displayname = "dufs"
+  origin      = var.dufs_url
+
+  redirect_uris = [
+    "${var.dufs_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "firefox" {
+  name        = "firefox"
+  displayname = "firefox"
+  origin      = var.firefox_url
+
+  redirect_uris = [
+    "${var.firefox_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "qbittorrent" {
+  name        = "qbittorrent"
+  displayname = "qBittorrent"
+  origin      = var.qbittorrent_url
+
+  redirect_uris = [
+    "${var.qbittorrent_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}

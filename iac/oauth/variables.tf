@@ -45,3 +45,27 @@ variable "jellyfin_url" {
   type        = string
   default     = "https://jellyfin.neffi.fr/"
 }
+
+variable "go2rtc_url" {
+  description = "Url of the go2rtc instance to administrate"
+  type        = string
+  default     = "https://go2rtc.neffi.fr/"
+}
+
+variable "dufs_url" {
+  description = "Url of the dufs instance to administrate"
+  type        = string
+  default     = "https://files.neffi.fr/"
+}
+
+variable "firefox_url" {
+  description = "Url of the firefox instance to administrate"
+  type        = string
+  default     = "https://firefox.neffi.fr/"
+}
+
+variable "qbittorrent_url" {
+  description = "Url of the qBittorrent instance to administrate"
+  type        = string
+  default     = "https://qbit.neffi.fr/"
+}

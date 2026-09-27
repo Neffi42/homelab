@@ -205,18 +205,3 @@ resource "kanidm_oauth2_basic" "firefox" {
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }
-
-resource "kanidm_oauth2_basic" "qbittorrent" {
-  name        = "qbittorrent"
-  displayname = "qBittorrent"
-  origin      = var.qbittorrent_url
-
-  redirect_uris = [
-    "${var.qbittorrent_url}oauth2/callback"
-  ]
-
-  scope_map {
-    group  = kanidm_group.app_admins.id
-    scopes = ["openid", "profile", "email", "groups_name"]
-  }
-}

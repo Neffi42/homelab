@@ -39,9 +39,3 @@ output "firefox_oauth_secret" {
   value       = kanidm_oauth2_basic.firefox.client_secret
   sensitive   = true
 }
-
-output "qbittorrent_oauth_secret" {
-  description = "OAuth2 client secret for qBittorrent"
-  value       = kanidm_oauth2_basic.qbittorrent.client_secret
-  sensitive   = true
-}

@@ -63,9 +63,3 @@ variable "firefox_url" {
   type        = string
   default     = "https://firefox.neffi.fr/"
 }
-
-variable "qbittorrent_url" {
-  description = "Url of the qBittorrent instance to administrate"
-  type        = string
-  default     = "https://qbit.neffi.fr/"
-}

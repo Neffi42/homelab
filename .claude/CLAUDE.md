@@ -40,7 +40,7 @@ apps/
   oliver/<category>/<app>/     # the cluster's tree — covers both nodes; per-node scheduling
                                 # (nodeSelector/tolerations) lives inside individual app manifests
   components/<name>/           # shared Kustomize Components (kind: Component), see below
-flux/oliver/                   # Flux bootstrap output (gotk-*.yaml, generated — don't hand-edit)
+flux/oliver/                   # flux-instance.yaml (the FluxInstance driving flux-operator)
                                 # + apps.yaml, the root Kustomization pointing at ./apps/oliver
 iac/<stack>/                   # OpenTofu stacks run manually, state in-cluster (see below)
 k3s/oliver/config.yaml         # k3s server config (tls-san, disabled components) for the
@@ -51,6 +51,29 @@ k3s/raspberrypi/config.yaml    # k3s agent config for the raspberrypi node, for 
 `flux/oliver/apps.yaml` is the single root `Kustomization` (path `./apps/oliver`) that Flux
 reconciles from; it patches sane defaults (`interval: 1h`, `prune: true`, `wait: false`) onto every
 child `Kustomization` found under that path, so per-app `ks.yaml` files don't need to repeat them.
+
+### Flux itself (flux-operator, not `flux bootstrap`)
+
+Flux is **not** bootstrapped — there is no `gotk-components.yaml`. `flux/oliver/flux-instance.yaml`
+is a `FluxInstance` (`fluxcd.controlplane.io/v1`) reconciled by
+[flux-operator](https://fluxoperator.dev), which renders the Flux components and generates the
+`GitRepository/flux-system` + `Kustomization/flux-system` that `gotk-sync.yaml` used to define —
+same names, so every app `ks.yaml`'s `sourceRef` keeps working. `spec.distribution.version` is the
+single source of truth for the Flux version (Renovate tracks it via a custom regex manager against
+`controlplaneio-fluxcd/distribution`); don't hand-bump controller images anywhere.
+
+The operator itself is under GitOps at `apps/oliver/flux-system/flux-operator/` (OCIRepository +
+HelmRelease, adopting the Helm release created at bootstrap time). Its status web UI is on the
+`private` Gateway at `flux.neffi.fr`. That category deliberately has **no `namespace.yaml`** —
+`flux-system` is part of the distribution manifests the operator owns.
+
+Rebuilding the cluster from scratch is three manual steps, then git takes over:
+
+1. `helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator -n flux-system --create-namespace`
+2. create the `flux-system` Secret (Forgejo token) — **the one piece of state with no source of
+   truth in this repo**, no `ExternalSecret` produces it:
+   `flux-operator create secret basic-auth flux-system -n flux-system --username=git --password-stdin`
+3. `kubectl apply -f flux/oliver/flux-instance.yaml`
 
 ### App directory pattern
 

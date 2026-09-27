@@ -1,0 +1,22 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: flux-operator
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: flux-operator
+  values:
+    priorityClassName: system-cluster-critical
+    web:
+      enabled: true
+      httpRoute:
+        enabled: true
+        hostnames:
+          - "flux.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network

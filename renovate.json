@@ -39,6 +39,18 @@
       "datasourceTemplate": "docker",
       "packageNameTemplate": "code.forgejo.org/{{depName}}",
       "autoReplaceStringTemplate": "{{depName}}\n{{indentation}}tag: {{newValue}}\n{{indentation}}digest: {{#if newDigest}}{{{newDigest}}}{{else}}{{{currentDigest}}}{{/if}}"
+    },
+    {
+      "customType": "regex",
+      "description": "Track the Flux distribution version pinned in the FluxInstance",
+      "managerFilePatterns": ["/flux-instance\\.yaml$/"],
+      "matchStrings": [
+        "distribution:\\n\\s+version: \"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "controlplaneio-fluxcd/distribution",
+      "extractVersionTemplate": "^v(?<version>.*)$",
+      "versioningTemplate": "semver"
     }
   ]
 }

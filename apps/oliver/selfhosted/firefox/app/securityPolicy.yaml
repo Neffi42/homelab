@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: firefox-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: firefox
+  oidc:
+    provider:
+      issuer: https://auth.neffi.fr/oauth2/openid/firefox
+    clientID: firefox
+    clientSecret:
+      name: firefox-oauth-credentials
+    scopes:
+      - openid
+      - profile
+      - email

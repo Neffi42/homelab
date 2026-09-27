@@ -1,0 +1,21 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/gateway.envoyproxy.io/securitypolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: qbittorrent-oidc
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: qbittorrent
+  oidc:
+    provider:
+      issuer: https://auth.neffi.fr/oauth2/openid/qbittorrent
+    clientID: qbittorrent
+    clientSecret:
+      name: qbittorrent-oauth-credentials
+    scopes:
+      - openid
+      - profile
+      - email

@@ -56,6 +56,24 @@
       "depNameTemplate": "controlplaneio-fluxcd/distribution",
       "extractVersionTemplate": "^v(?<version>.*)$",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "helm-values heuristic isn't catching jellyfin's image for unknown reasons (confirmed: zero Renovate-authored commits ever touched this dep) - force it via explicit regex",
+      "managerFilePatterns": ["/media\\/jellyfin\\/app\\/helmRelease\\.yaml$/"],
+      "matchStrings": [
+        "repository: (?<depName>docker\\.io/jellyfin/jellyfin)\\n\\s+tag: \"(?<currentValue>[^@]+)@(?<currentDigest>sha256:[a-f0-9]+)\""
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Same helm-values gap for continuwuity's unbound sidecar image (confirmed: never bumped, unlike the main continuwuity image in the same file)",
+      "managerFilePatterns": ["/matrix\\/continuwuity\\/app\\/helmRelease\\.yaml$/"],
+      "matchStrings": [
+        "repository: (?<depName>docker\\.io/madnuttah/unbound)\\n\\s+tag: (?<currentValue>[^@]+)@(?<currentDigest>sha256:[a-f0-9]+)"
+      ],
+      "datasourceTemplate": "docker"
     }
   ]
 }

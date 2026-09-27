@@ -118,9 +118,8 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   `namespace: network` explicitly, it does not default to the Gateway's namespace.
 - **Node scheduling**: `raspberrypi` (the arm64 agent node) carries the taint
   `dedicated=slow-node:NoSchedule` — its SD card has almost no free space and its old HDD has a
-  documented history of read-only-remount failures
-  (`docs/incidents/2026-09-03-garage-hdd-emergency-ro.md`), so nothing PVC-backed should ever land
-  there. Only workloads that explicitly need no PVC and opt in via a matching `toleration` +
+  history of read-only-remount failures, so nothing PVC-backed should ever land there. Only
+  workloads that explicitly need no PVC and opt in via a matching `toleration` +
   `nodeSelector: {kubernetes.io/hostname: raspberrypi}` schedule there (currently: the Forgejo
   Actions runner, `apps/oliver/forgejo-runner/`). Everything else schedules normally across both
   nodes.
@@ -129,8 +128,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   app means adding a `kanidm_oauth2_basic` + `kanidm_group` there too.
 - Backups: kopiur (`apps/oliver/storage/kopiur`) backs up PVCs to the `hetzner-1` `ClusterRepository`
   (a Hetzner Storage Box over SFTP) — the sole backup target now; the earlier garage-on-raspberrypi
-  repository was decommissioned after repeated HDD read-only-remount incidents (see
-  `docs/incidents/2026-09-03-garage-hdd-emergency-ro.md`). `oliver` has no CSI
+  repository was decommissioned after repeated HDD read-only-remount incidents. `oliver` has no CSI
   snapshot-controller/`VolumeSnapshotClass` (`local-path` only) — every `SnapshotPolicy` needs
   `copyMethod: Direct`. The mover's default UID (`65532`) frequently can't read an app's real data
   (rootless images running as `1000`, `0700`-permission dirs like SSH keys) — check the live pod's

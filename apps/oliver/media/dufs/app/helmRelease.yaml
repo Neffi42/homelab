@@ -24,9 +24,9 @@ spec:
               - name: DUFS_ALLOW_ALL
                 value: false
               - name: DUFS_ALLOW_UPLOAD
-                value: false
+                value: true
               - name: DUFS_ALLOW_DELETE
-                value: false
+                value: true
               - name: DUFS_ALLOW_SEARCH
                 value: true
             probes:

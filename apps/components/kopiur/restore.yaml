@@ -10,9 +10,6 @@ spec:
   credentialProjection:
     enabled: true
   policy:
-    # fresh/empty on first-ever provision (no snapshot yet) rather than failing --
-    # this is what makes the same manifest work for both "first deploy" and
-    # "disaster recovery restore".
     onMissingSnapshot: Continue
   source:
     fromPolicy:

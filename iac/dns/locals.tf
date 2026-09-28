@@ -23,9 +23,8 @@ locals {
     ]
   ])
 
-  # This cluster's own "private" Gateway advertises its Tailscale address via
-  # spec.addresses — read it back instead of a static var, so each cluster's
-  # private HTTPRoutes always resolve to that cluster's own Tailscale IP.
+  # The "private" Gateway advertises oliver's Tailscale address via
+  # spec.addresses — read it back instead of a static var.
   private_gateway_addresses = flatten([
     for ns, gateways in data.kubernetes_resources.gateways : [
       for gateway in gateways.objects : [

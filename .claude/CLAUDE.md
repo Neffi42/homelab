@@ -118,11 +118,18 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   `namespace: network` explicitly, it does not default to the Gateway's namespace.
 - **Node scheduling**: `raspberrypi` (the arm64 agent node) carries the taint
   `dedicated=slow-node:NoSchedule` — its SD card has almost no free space and its old HDD has a
-  history of read-only-remount failures, so nothing PVC-backed should ever land there. Only
-  workloads that explicitly need no PVC and opt in via a matching `toleration` +
-  `nodeSelector: {kubernetes.io/hostname: raspberrypi}` schedule there (currently: the Forgejo
-  Actions runner, `apps/oliver/forgejo-runner/`). Everything else schedules normally across both
-  nodes.
+  history of read-only-remount failures, so nothing PVC-backed should ever land there. PVC-less
+  workloads opt in with a matching `toleration` plus a *preferred* nodeAffinity on
+  `kubernetes.io/hostname In [raspberrypi]`, never a hard `nodeSelector`, so they fall back to
+  oliver when the Pi is down. Deployments stay on oliver after a failover until they're restarted.
+  Currently opted in: the Forgejo Actions runner and its job podspecs (`apps/oliver/forgejo-runner/`),
+  Renovate, the external-secrets controller/cert-controller/bitwarden-sdk-server, the cert-manager
+  controller/cainjector, reloader, sableclient, and plugin-barman-cloud. **Never** move admission
+  webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
+  or anything on the ingress/recovery path (Envoy, Flux, CoreDNS) there: with `failurePolicy: Fail`,
+  a flaky Pi would block API writes cluster-wide. Runner jobs land on arm64 normally and on amd64
+  during a failover, so image builds need an explicit `--platform`. Everything without the
+  toleration stays on oliver.
 - Auth: Kanidm (`apps/oliver/auth/kanidm`) is the OIDC provider; app OAuth2 clients/groups are
   provisioned in `iac/oauth`, not in the app's own Kustomization — adding a new OIDC-integrated
   app means adding a `kanidm_oauth2_basic` + `kanidm_group` there too.

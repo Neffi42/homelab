@@ -9,3 +9,18 @@ spec:
     kind: OCIRepository
     name: plugin-barman-cloud
   interval: 1h
+  values:
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: slow-node
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values: [raspberrypi]

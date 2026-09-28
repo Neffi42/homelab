@@ -18,4 +18,18 @@ spec:
       enableHA: false
       deployment:
         replicas: 1
+        tolerations:
+          - key: dedicated
+            operator: Equal
+            value: slow-node
+            effect: NoSchedule
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values: [raspberrypi]
       readOnlyRootFileSystem: true

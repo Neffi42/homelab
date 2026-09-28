@@ -15,3 +15,32 @@ spec:
   values:
     crds:
       enabled: true
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: slow-node
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values: [raspberrypi]
+    cainjector:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: slow-node
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [raspberrypi]

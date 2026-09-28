@@ -13,5 +13,48 @@ spec:
         kind: HelmRepository
         name: external-secrets
   values:
+    tolerations:
+      - key: dedicated
+        operator: Equal
+        value: slow-node
+        effect: NoSchedule
+    affinity:
+      nodeAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values: [raspberrypi]
+    certController:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: slow-node
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [raspberrypi]
     bitwarden-sdk-server:
       enabled: true
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: slow-node
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [raspberrypi]

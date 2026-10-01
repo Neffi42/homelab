@@ -42,7 +42,7 @@ spec:
                   httpGet:
                     port: &httpPort 5000
                     path: /
-                  initialDelaySeconds: 30
+                  initialDelaySeconds: 5
                   timeoutSeconds: 5
                   failureThreshold: 3
                   periodSeconds: 10

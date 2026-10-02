@@ -26,7 +26,7 @@ There is no linter/test runner in this repo. Validate changes by:
 - `flux build kustomization <name> --path <dir> --kustomization-file <ks.yaml> --dry-run` — the one that
   actually reflects `spec.components`/`postBuild.substitute`/`dependsOn`-aware output; required for anything
   wired through `apps/components/`, optional (but still useful) otherwise.
-- `tofu -chdir=iac/<stack> validate` / `tofu -chdir=iac/<stack> plan` — for the two Terraform stacks.
+- `tofu -chdir=iac/<stack> validate` — for the two OpenTofu stacks. Never `apply` locally; see below.
 
 YAML files carry `# yaml-language-server: $schema=...` comment headers pointing at
 `schemas.neffi.fr` (custom, for CRDs like HelmRelease/OCIRepository/ExternalSecret/Gateway) or
@@ -42,7 +42,7 @@ apps/
   components/<name>/           # shared Kustomize Components (kind: Component), see below
 flux/oliver/                   # flux-instance.yaml (the FluxInstance driving flux-operator)
                                 # + apps.yaml, the root Kustomization pointing at ./apps/oliver
-iac/<stack>/                   # OpenTofu stacks run manually, state in-cluster (see below)
+iac/<stack>/                   # OpenTofu stacks, applied only by Forgejo Actions, state in-cluster (see below)
 k3s/oliver/config.yaml         # k3s server config (tls-san, disabled components) for the
                                 # control-plane node, for reference
 k3s/raspberrypi/config.yaml    # k3s agent config for the raspberrypi node, for reference
@@ -191,9 +191,9 @@ confirming the target StorageClass's provisioner actually implements populators.
 
 ## OpenTofu stacks (`iac/`)
 
-Two independent stacks, each with its own state, run manually (not via an in-cluster controller —
-the `terraform` namespace under `apps/oliver/terraform` just hosts the Kubernetes-secret state
-backend):
+Two independent stacks, each with its own state, applied **only by Forgejo Actions workflows**
+in `.forgejo/workflows/` (not by hand, not by an in-cluster controller — the `terraform` namespace
+under `apps/oliver/terraform` just hosts the Kubernetes-secret state backend):
 
 - `iac/dns` — derives DNS records from live cluster state: reads `HTTPRoute` objects via the
   `kubernetes_resources` data source, buckets hostnames into public (OVH zone, `A` record to the
@@ -204,9 +204,17 @@ backend):
   now (no per-cluster fan-out).
 - `iac/oauth` — Kanidm persons/groups/OAuth2 clients (see above).
 
-Run with `tofu -chdir=iac/<stack> plan|apply`; backend is `kubernetes` (`secret_suffix` = stack
-name, `namespace = "terraform"`), so a working `KUBECONFIG` against the right cluster is required
-before planning.
+Never run `tofu apply` locally — the workflows are the only writer to state:
+
+- `oauth.yml` — `plan` + `apply` on every push to `main` touching `iac/oauth/**`, or manual dispatch.
+- `dns.yml` — same on pushes touching `iac/dns/**`, plus a daily schedule (00:00) because it reads
+  live cluster state, so route changes under `apps/` only reach DNS on the next scheduled run
+  unless dispatched (`fj actions dispatch dns.yml main`).
+
+Changing a stack therefore means: commit, push, then check the workflow run. Secrets (Kanidm token,
+Pi-hole/OVH credentials, user mails) exist only as Forgejo Actions secrets, so local `plan` will
+lack the `TF_VAR_*` inputs anyway; `validate` is the local check. Backend is `kubernetes`
+(`secret_suffix` = stack name, `namespace = "terraform"`).
 
 ## Renovate
 

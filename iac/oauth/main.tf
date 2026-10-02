@@ -84,6 +84,16 @@ resource "kanidm_group" "jellyfin_users" {
   ]
 }
 
+resource "kanidm_group" "go2rtc_users" {
+  name        = "go2rtc_users"
+  description = "Camera viewers (cam.neffi.fr)"
+
+  members = [
+    kanidm_person.neffi.id,
+    kanidm_person.cla.id,
+  ]
+}
+
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"
@@ -172,6 +182,11 @@ resource "kanidm_oauth2_basic" "go2rtc" {
 
   scope_map {
     group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  scope_map {
+    group  = kanidm_group.go2rtc_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }

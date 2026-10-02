@@ -27,12 +27,6 @@ spec:
               - /data
             env:
               - name: DUFS_ALLOW_ALL
-                value: false
-              - name: DUFS_ALLOW_UPLOAD
-                value: true
-              - name: DUFS_ALLOW_DELETE
-                value: true
-              - name: DUFS_ALLOW_SEARCH
                 value: true
             probes:
               liveness: &probe

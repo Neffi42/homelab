@@ -49,7 +49,7 @@ variable "jellyfin_url" {
 variable "go2rtc_url" {
   description = "Url of the go2rtc instance to administrate"
   type        = string
-  default     = "https://go2rtc.neffi.fr/"
+  default     = "https://cam.neffi.fr/"
 }
 
 variable "dufs_url" {

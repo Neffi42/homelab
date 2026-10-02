@@ -42,12 +42,70 @@ spec:
                 memory: 64Mi
               limits:
                 memory: 256Mi
+          # Only exposed container: go2rtc's API stays on localhost inside the pod.
+          go2ptz:
+            image:
+              repository: code.neffi.fr/neffi42/go2ptz
+              tag: 0.1.0
+            envFrom:
+              - secretRef:
+                  name: go2ptz-credentials
+            env:
+              GO2RTC_URL: http://127.0.0.1:1984
+              GO2RTC_STREAM: camera1
+              LISTEN_ADDR: ":8080"
+            probes:
+              liveness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &go2ptzPort 8080
+                    path: /healthz
+                  periodSeconds: 15
+                  timeoutSeconds: 3
+                  failureThreshold: 5
+              readiness:
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: *go2ptzPort
+                    path: /readyz
+                  periodSeconds: 10
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 10m
+                memory: 32Mi
+              limits:
+                memory: 128Mi
     service:
       go2rtc:
         controller: go2rtc
         ports:
           http:
-            port: *httpPort
+            port: *go2ptzPort
+            protocol: TCP
+      webrtc-udp:
+        controller: go2rtc
+        ports:
+          webrtc:
+            port: &webrtcPort 8555
+            protocol: UDP
+      webrtc-tcp:
+        controller: go2rtc
+        ports:
+          webrtc:
+            port: *webrtcPort
             protocol: TCP
     configMaps:
       config:
@@ -58,6 +116,11 @@ spec:
               camera1: "$${CAMERA_STREAM_URL}"
             api:
               listen: ":1984"
+            webrtc:
+              listen: ":8555"
+              # Private Gateway's Tailscale IP, proxied to the webrtc-* Services.
+              candidates:
+                - 100.110.121.73:8555
     persistence:
       config:
         type: configMap
@@ -68,15 +131,46 @@ spec:
               - path: /config/go2rtc.yaml
                 subPath: go2rtc.yaml
                 readOnly: true
+      snapshots:
+        type: persistentVolumeClaim
+        storageClass: local-path-oliver
+        accessMode: ReadWriteOnce
+        size: 1Gi
+        advancedMounts:
+          go2rtc:
+            go2ptz:
+              - path: /data
     route:
       http:
+        # SecurityPolicy go2rtc-oidc targets this name; multiple routes would suffix it with -http.
+        forceRename: go2rtc
         kind: HTTPRoute
         hostnames:
-          - "go2rtc.neffi.fr"
+          - "cam.neffi.fr"
         parentRefs:
           - name: private
             namespace: network
         rules:
           - backendRefs:
               - name: go2rtc
-                port: *httpPort
+                port: *go2ptzPort
+      udp:
+        kind: UDPRoute
+        parentRefs:
+          - name: private
+            namespace: network
+            sectionName: webrtc-udp
+        rules:
+          - backendRefs:
+              - name: go2rtc-webrtc-udp
+                port: *webrtcPort
+      tcp:
+        kind: TCPRoute
+        parentRefs:
+          - name: private
+            namespace: network
+            sectionName: webrtc-tcp
+        rules:
+          - backendRefs:
+              - name: go2rtc-webrtc-tcp
+                port: *webrtcPort

@@ -95,14 +95,21 @@ spec:
                 port: *httpPort
       udp:
         kind: UDPRoute
-        parentRefs: *gateway
+        # sectionName: L4 routes otherwise attach to every listener of their protocol.
+        parentRefs:
+          - name: private
+            namespace: network
+            sectionName: dns-udp
         rules:
           - backendRefs:
               - name: pi-hole-dns-udp
                 port: *dnsPort
       tcp:
         kind: TCPRoute
-        parentRefs: *gateway
+        parentRefs:
+          - name: private
+            namespace: network
+            sectionName: dns-tcp
         rules:
           - backendRefs:
               - name: pi-hole-dns-tcp

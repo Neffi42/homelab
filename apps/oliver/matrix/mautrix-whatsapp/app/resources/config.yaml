@@ -38,9 +38,11 @@ backfill:
   max_initial_messages: 50
   max_catchup_messages: 500
 
+# Automatic double puppeting via a separate, URL-less "doublepuppet" appservice registered on
+# continuwuity. secrets["neffi.fr"] = "as_token:<token>" comes from env, see externalSecret.yaml.
 double_puppet:
   servers: {}
-  secrets: {}
+  secrets: {} # from env
 
 encryption:
   allow: true

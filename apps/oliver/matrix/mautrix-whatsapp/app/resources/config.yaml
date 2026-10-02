@@ -30,6 +30,11 @@ appservice:
   hs_token: "" # from env
   username_template: whatsapp_{{.}}
 
+network:
+  # Prefer the name saved in my phone's address book. Ghosts are global, which is fine on a
+  # single-user homeserver.
+  displayname_template: '{{or .FullName .BusinessName .PushName .Phone .RedactedPhone "Unknown user"}} (WA)'
+
 provisioning:
   shared_secret: disable
 

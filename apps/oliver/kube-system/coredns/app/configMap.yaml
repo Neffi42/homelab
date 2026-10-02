@@ -1,0 +1,16 @@
+---
+# k3s's CoreDNS imports *.server keys from this optional ConfigMap. Its default upstreams are
+# the pod's resolv.conf (Pi-hole + the router, picked at random); the router has no private
+# *.neffi.fr records and its empty answer gets cached, so pin the zone to Pi-hole (via the
+# private Gateway's LAN address). Pi-hole resolves the public neffi.fr records too.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+data:
+  neffi.server: |
+    neffi.fr:53 {
+      errors
+      cache 30
+      forward . 192.168.1.42
+    }

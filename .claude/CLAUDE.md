@@ -122,13 +122,15 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   workloads opt in with a matching `toleration` plus a *preferred* nodeAffinity on
   `kubernetes.io/hostname In [raspberrypi]`, never a hard `nodeSelector`, so they fall back to
   oliver when the Pi is down. Deployments stay on oliver after a failover until they're restarted.
-  Currently opted in: the Forgejo Actions runner and its job podspecs (`apps/oliver/forgejo-runner/`),
+  Currently opted in: the Forgejo Actions runner and its default job podspec (`apps/oliver/forgejo-runner/`;
+  the `docker` dind podspec deliberately is not — image builds took 25+ min on the Pi),
   the external-secrets controller/cert-controller/bitwarden-sdk-server, the cert-manager
   controller/cainjector, reloader, sableclient, and plugin-barman-cloud. **Never** move admission
   webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
   or anything on the ingress/recovery path (Envoy, Flux, CoreDNS) there: with `failurePolicy: Fail`,
-  a flaky Pi would block API writes cluster-wide. Runner jobs land on arm64 normally and on amd64
-  during a failover, so image builds need an explicit `--platform`. Everything without the
+  a flaky Pi would block API writes cluster-wide. Default runner jobs land on arm64 normally and on amd64
+  during a failover; `docker` (dind) jobs always run on amd64 oliver, so image builds still need an
+  explicit `--platform` for arm64 output. Everything without the
   toleration stays on oliver. CPU-heavy jobs don't belong on the Pi either: Renovate
   pinned a full core there and ran 4x+ longer than on oliver, so it was moved back.
 - Auth: Kanidm (`apps/oliver/auth/kanidm`) is the OIDC provider; app OAuth2 clients/groups are

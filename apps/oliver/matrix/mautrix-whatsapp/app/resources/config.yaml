@@ -1,0 +1,57 @@
+# mautrix-whatsapp v0.2609.0 (bridgev2). Only overrides are listed; the bridge merges the
+# upstream example config in memory (run with --no-update, so nothing is written back).
+# Secrets (as_token, hs_token, database.uri, encryption.pickle_key) come from env, see externalSecret.yaml.
+env_config_prefix: MAUTRIX_WHATSAPP_
+
+bridge:
+  permissions:
+    "neffi.fr": user
+    "@neffi:neffi.fr": admin
+
+database:
+  type: postgres
+  uri: "" # from env
+
+homeserver:
+  address: http://continuwuity.matrix.svc.cluster.local
+  domain: neffi.fr
+  software: standard
+
+appservice:
+  address: http://mautrix-whatsapp.matrix.svc.cluster.local:29318
+  public_address: ""
+  hostname: 0.0.0.0
+  port: 29318
+  id: whatsapp
+  bot:
+    username: whatsappbot
+    displayname: WhatsApp bridge bot
+  as_token: "" # from env
+  hs_token: "" # from env
+  username_template: whatsapp_{{.}}
+
+provisioning:
+  shared_secret: disable
+
+backfill:
+  enabled: true
+  max_initial_messages: 50
+  max_catchup_messages: 500
+
+double_puppet:
+  servers: {}
+  secrets: {}
+
+encryption:
+  allow: true
+  default: true
+  require: false
+  appservice: false
+  msc4190: true
+  pickle_key: "" # from env
+
+logging:
+  min_level: info
+  writers:
+    - type: stdout
+      format: pretty-colored

@@ -1,0 +1,98 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: mautrix-whatsapp
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: mautrix-whatsapp
+  interval: 1h
+  values:
+    controllers:
+      mautrix-whatsapp:
+        type: deployment
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        containers:
+          app:
+            image:
+              repository: dock.mau.dev/mautrix/whatsapp
+              tag: v0.2609.0@sha256:e92b5217929622aabfea3cf72b279d1b73790a035a293d7149bcce7ae220b86f
+            # Bypass docker-run.sh: it chowns /data as root and rewrites the config.
+            command: [/usr/bin/mautrix-whatsapp]
+            args: [-c, /config/config.yaml, --no-update]
+            env:
+              TZ: Europe/Paris
+            envFrom:
+              - secretRef:
+                  name: mautrix-whatsapp
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &port 29318
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *port
+                  periodSeconds: 5
+                  failureThreshold: 60 # DB migrations on first start
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 25m
+                memory: 128Mi
+              limits:
+                memory: 512Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1337
+        runAsGroup: 1337
+        fsGroup: 1337
+        fsGroupChangePolicy: OnRootMismatch
+
+    service:
+      app:
+        ports:
+          http:
+            port: *port
+
+    persistence:
+      config:
+        type: configMap
+        name: mautrix-whatsapp-configmap
+        advancedMounts:
+          mautrix-whatsapp:
+            app:
+              - path: /config/config.yaml
+                subPath: config.yaml
+                readOnly: true
+      data:
+        type: emptyDir
+        advancedMounts:
+          mautrix-whatsapp:
+            app:
+              - path: /data
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          mautrix-whatsapp:
+            app:
+              - path: /tmp

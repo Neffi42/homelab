@@ -38,3 +38,9 @@ spec:
         superuser: false
         passwordSecret:
           name: forgejo-credentials
+      - name: mautrix_whatsapp
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: mautrix-whatsapp-credentials

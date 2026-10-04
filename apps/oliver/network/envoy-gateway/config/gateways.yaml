@@ -60,17 +60,6 @@ spec:
       protocol: TCP
       port: 8555
       allowedRoutes: *webrtcRoutes
-    - name: rdp
-      protocol: TCP
-      port: 3389
-      allowedRoutes:
-        kinds:
-          - kind: TCPRoute
-        namespaces:
-          from: Selector
-          selector:
-            matchLabels:
-              kubernetes.io/metadata.name: wine-machine
 ---
 # yaml-language-server: $schema=https://schemas.neffi.fr/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1

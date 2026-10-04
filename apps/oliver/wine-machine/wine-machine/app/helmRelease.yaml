@@ -32,7 +32,7 @@ spec:
           app:
             image:
               repository: code.neffi.fr/neffi42/wine-machine
-              tag: 0.1.0-rc.2@sha256:879ec08e82fd7460e8a67c777e3a1da4ed694a08e1b34d93ee716e3995301225
+              tag: 0.1.0@sha256:409065bd39187f6e01a1ec3c385cfae49283ae9b0ae79c274084d8629a993e82
             envFrom:
               - secretRef:
                   name: wine-machine-credentials

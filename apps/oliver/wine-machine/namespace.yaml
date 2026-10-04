@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wine-machine
+  annotations:
+    # The pod runs as root (UID 0) and the home is owned by 1000: the kopiur mover needs root.
+    kopiur.home-operations.com/privileged-movers: "true"

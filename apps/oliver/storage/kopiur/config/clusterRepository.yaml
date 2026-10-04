@@ -33,3 +33,4 @@ spec:
       - auth
       - matrix
       - media
+      - wine-machine

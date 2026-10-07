@@ -29,7 +29,7 @@ spec:
               - name: TZ
                 value: Europe/Paris
               - name: APP_URL
-                value: "https://feridum.neffi.fr"
+                value: "https://ferdium.neffi.fr"
               - name: NODE_ENV
                 value: production
               - name: CONNECT_WITH_FRANZ

@@ -46,6 +46,7 @@ iac/<stack>/                   # OpenTofu stacks, applied only by Forgejo Action
 k3s/oliver/config.yaml         # k3s server config (tls-san, disabled components) for the
                                 # control-plane node, for reference
 k3s/raspberrypi/config.yaml    # k3s agent config for the raspberrypi node, for reference
+scripts/                       # scripts run by Forgejo Actions workflows, plus manual ops scripts
 ```
 
 `flux/oliver/apps.yaml` is the single root `Kustomization` (path `./apps/oliver`) that Flux

@@ -1,5 +1,4 @@
 server:
-  externalUrl: "https://cloud.neffi.fr"
   database:
     path: "/db/filebrowser.sqlite"
     migrateFrom: "/db/database.db.old" # first v2 run only, remove afterwards
@@ -10,6 +9,7 @@ server:
         defaultEnabled: true
 
 http:
+  externalUrl: "https://cloud.neffi.fr"
   trustProxyHeaders: true
   disableRateLimit: false
 

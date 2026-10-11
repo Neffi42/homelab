@@ -139,6 +139,8 @@ spec:
                 subPath: data
               - path: /app/recipes
                 subPath: recipes
+              - path: /app/build/tmp/uploads
+                subPath: uploads
     route:
       http:
         kind: HTTPRoute

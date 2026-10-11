@@ -1,7 +1,6 @@
 server:
   database:
     path: "/db/filebrowser.sqlite"
-    migrateFrom: "/db/database.db.old" # first v2 run only, remove afterwards
   disablePreviews: true
   sources:
     - path: /files

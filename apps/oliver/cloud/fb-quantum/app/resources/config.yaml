@@ -1,6 +1,8 @@
 server:
   externalUrl: "https://cloud.neffi.fr"
-  database: "/db/database.db"
+  database:
+    path: "/db/filebrowser.sqlite"
+    migrateFrom: "/db/database.db.old" # first v2 run only, remove afterwards
   disablePreviews: true
   sources:
     - path: /files
@@ -8,9 +10,7 @@ server:
         defaultEnabled: true
 
 http:
-  trustedHeaders:
-    - X-Forwarded-For
-    - X-Real-IP
+  trustProxyHeaders: true
   disableRateLimit: false
 
 frontend:

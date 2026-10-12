@@ -23,7 +23,7 @@ spec:
           renovate:
             image:
               repository: renovate/renovate
-              tag: 44.150.1@sha256:4355df2a8b79b7d3095c0fc4e4ea6aae958c44aeb134c4d5033e002832517ae3
+              tag: 44.151.2@sha256:9ea828b38867af0ca5f269e6c5feace9e74e7f035da150bb16f8c5f70bf2e6e8
             restartPolicy: Never
             env:
               TZ: Europe/Paris

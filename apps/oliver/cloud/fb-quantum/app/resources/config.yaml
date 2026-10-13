@@ -4,6 +4,7 @@ server:
   disablePreviews: true
   sources:
     - path: /files
+      name: cloud
       config:
         defaultEnabled: true
 

@@ -27,6 +27,9 @@ spec:
               TZ: Europe/Paris
               FTLCONF_dns_listeningMode: ALL
               FTLCONF_webserver_api_max_sessions: 32
+              # dnsmasq serves local records with TTL 0, so clients never cache them
+              # but do cache the router's NXDOMAIN for the same names
+              FTLCONF_misc_dnsmasq_lines: local-ttl=300
             envFrom:
               - secretRef:
                   name: pi-hole-credentials

@@ -6,4 +6,5 @@ resources:
   - ./namespace.yaml
   - ./continuwuity/ks.yaml
   - ./sableclient/ks.yaml
+  - ./element-web/ks.yaml
   - ./mautrix-whatsapp/ks.yaml

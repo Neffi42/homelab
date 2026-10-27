@@ -1,0 +1,118 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: element-web
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: element-web
+  interval: 1h
+  values:
+    controllers:
+      element-web:
+        type: deployment
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          tolerations:
+            - key: dedicated
+              operator: Equal
+              value: slow-node
+              effect: NoSchedule
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                      - key: kubernetes.io/hostname
+                        operator: In
+                        values: [raspberrypi]
+        containers:
+          app:
+            image:
+              repository: docker.io/vectorim/element-web
+              tag: v1.12.32@sha256:f8700633d4336258af7a05b53865a4f479e0d628cf2d9ca83d28b5939314d4ce
+            env:
+              TZ: Europe/Paris
+              # Image defaults to 80, which the unprivileged nginx user can't bind everywhere.
+              ELEMENT_WEB_PORT: "8080"
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /
+                    port: &port 8080
+                  initialDelaySeconds: 0
+                  periodSeconds: 10
+                  timeoutSeconds: 1
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities: { drop: ["ALL"] }
+            resources:
+              requests:
+                cpu: 25m
+                memory: 64Mi
+              limits:
+                cpu: 250m
+                memory: 256Mi
+
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        fsGroupChangePolicy: OnRootMismatch
+
+    persistence:
+      # The entrypoint copies /app/config*.json into /tmp/element-web-config, which nginx serves.
+      config:
+        type: configMap
+        name: element-web-configmap
+        advancedMounts:
+          element-web:
+            app:
+              - path: /app/config.json
+                subPath: config.json
+                readOnly: true
+      tmp:
+        type: emptyDir
+        advancedMounts:
+          element-web:
+            app:
+              - path: /tmp
+      # Rendered from /etc/nginx/templates at startup.
+      nginx-conf:
+        type: emptyDir
+        advancedMounts:
+          element-web:
+            app:
+              - path: /etc/nginx/conf.d
+
+    service:
+      app:
+        ports:
+          http:
+            port: 80
+            targetPort: *port
+
+    route:
+      app:
+        hostnames:
+          - "element.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - identifier: app
+                port: 80

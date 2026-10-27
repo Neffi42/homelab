@@ -126,7 +126,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   Currently opted in: the Forgejo Actions runner and its default job podspec (`apps/oliver/forgejo-runner/`;
   the `docker` dind podspec deliberately is not — image builds took 25+ min on the Pi),
   the external-secrets controller/cert-controller/bitwarden-sdk-server, the cert-manager
-  controller/cainjector, reloader, sableclient, and plugin-barman-cloud. **Never** move admission
+  controller/cainjector, reloader, element-web, and plugin-barman-cloud. **Never** move admission
   webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
   or anything on the ingress/recovery path (Envoy, Flux, CoreDNS) there: with `failurePolicy: Fail`,
   a flaky Pi would block API writes cluster-wide. Default runner jobs land on arm64 normally and on amd64

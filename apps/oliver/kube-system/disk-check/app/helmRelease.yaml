@@ -21,7 +21,7 @@ spec:
       oliver:
         type: cronjob
         cronjob: &cronjob
-          schedule: "0 * * * *"
+          schedule: "0 */6 * * *"
           concurrencyPolicy: Forbid
           backoffLimit: 0
           ttlSecondsAfterFinished: 86400

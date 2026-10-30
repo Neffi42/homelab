@@ -1,0 +1,12 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/notification.toolkit.fluxcd.io/provider_v1beta3.json
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: matrix
+spec:
+  type: matrix
+  address: http://continuwuity.matrix.svc.cluster.local
+  channel: "!gPFPE-MqiqNH1zLGQbTpLwPiIedUn5F4PE6scgkeAVQ"
+  secretRef:
+    name: matrix-alerts

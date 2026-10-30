@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: disk-check
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: disk-check
+  interval: 1h
+  values:
+    defaultPodOptions:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsUser: 65534
+        runAsGroup: 65534
+        runAsNonRoot: true
+    # One CronJob per node: each checks the filesystems of the node it runs on, so the
+    # nodeSelector is hard on purpose (unlike the usual preferred raspberrypi affinity).
+    controllers:
+      oliver:
+        type: cronjob
+        cronjob: &cronjob
+          schedule: "0 * * * *"
+          concurrencyPolicy: Forbid
+          backoffLimit: 0
+          ttlSecondsAfterFinished: 86400
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
+        pod:
+          nodeSelector:
+            kubernetes.io/hostname: oliver
+        containers:
+          app: &container
+            image:
+              repository: docker.io/curlimages/curl
+              tag: 8.23.0@sha256:3fb7e13e5d179a845c97d78204f3f1064d1907037f26a3ebf91710571151fd93
+            command: [sh, /scripts/disk-check.sh]
+            env:
+              THRESHOLD: "85"
+              MATRIX_ADDRESS: http://continuwuity.matrix.svc.cluster.local
+              MATRIX_ROOM: "!gPFPE-MqiqNH1zLGQbTpLwPiIedUn5F4PE6scgkeAVQ"
+              MATRIX_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: matrix-alerts
+                    key: token
+              NODE_NAME:
+                valueFrom:
+                  fieldRef:
+                    fieldPath: spec.nodeName
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
+      raspberrypi:
+        type: cronjob
+        cronjob: *cronjob
+        pod:
+          nodeSelector:
+            kubernetes.io/hostname: raspberrypi
+          tolerations:
+            - key: dedicated
+              operator: Equal
+              value: slow-node
+              effect: NoSchedule
+        containers:
+          app: *container
+    persistence:
+      script:
+        type: configMap
+        name: disk-check
+        globalMounts:
+          - path: /scripts
+            readOnly: true
+      host-proc:
+        type: hostPath
+        hostPath: /proc
+        hostPathType: Directory
+        globalMounts:
+          - path: /host/proc
+            readOnly: true
+      host-root:
+        type: hostPath
+        hostPath: /
+        hostPathType: Directory
+        globalMounts:
+          - path: /host/root
+            readOnly: true

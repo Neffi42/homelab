@@ -1,0 +1,17 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/notification.toolkit.fluxcd.io/alert_v1beta3.json
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Alert
+metadata:
+  name: matrix
+spec:
+  providerRef:
+    name: matrix
+  eventSeverity: error
+  # HelmRelease failures surface through the Kustomization healthChecks, so watching
+  # Kustomizations covers them without listing every app namespace.
+  eventSources:
+    - kind: GitRepository
+      name: "*"
+    - kind: Kustomization
+      name: "*"

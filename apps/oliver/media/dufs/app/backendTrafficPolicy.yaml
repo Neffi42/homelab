@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/gateway.envoyproxy.io/backendtrafficpolicy_v1alpha1.json
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: dufs-downloads
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: dufs
+  timeout:
+    http:
+      # Envoy's default 15s route timeout cuts any download that takes longer
+      requestTimeout: 0s

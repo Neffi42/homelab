@@ -21,7 +21,7 @@ spec:
           app:
             image:
               repository: docker.io/sigoden/dufs
-              tag: v0.46.0
+              tag: v0.47.0
             restartPolicy: Always
             args:
               - /data

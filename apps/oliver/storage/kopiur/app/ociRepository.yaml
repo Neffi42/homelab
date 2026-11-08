@@ -8,5 +8,5 @@ spec:
   interval: 1h
   url: oci://ghcr.io/home-operations/charts/kopiur
   ref:
-    tag: "0.10.14"
-    digest: sha256:c10853a3edf5e0437de500bcfb027dafcaf315a7ce767191125565474817f308
+    tag: "0.10.17"
+    digest: sha256:f2ce3d4839bdd317358796ec9e13835c3dd49a4021c884237948f0821b6e5cb0

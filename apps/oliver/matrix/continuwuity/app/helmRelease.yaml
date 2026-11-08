@@ -55,7 +55,7 @@ spec:
             restartPolicy: Always
             image:
               repository: docker.io/madnuttah/unbound
-              tag: 1.26.1-0@sha256:112a6cb171515457bd37ad43cd033044401f383d720e9c525d2982c9e16af5f3
+              tag: 1.26.2-0@sha256:e122f1fb49f2499d2932cee74bb998c60e6141844485cd54fa3c6ad31ce131cb
             env:
               DISABLE_SET_PERMS: "true"
               HEALTHCHECK_PORT: 53

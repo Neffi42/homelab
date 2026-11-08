@@ -5,3 +5,12 @@ kind: Kustomization
 resources:
   - ./externalSecret.yaml
   - ./helmRelease.yaml
+
+configMapGenerator:
+  - name: renovate-check
+    files:
+      - renovate-check.sh=./resources/renovate-check.sh
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    kustomize.toolkit.fluxcd.io/substitute: disabled

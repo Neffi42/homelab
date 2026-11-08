@@ -39,6 +39,50 @@ spec:
                 memory: 512Mi
               limits:
                 memory: 1Gi
+      check:
+        type: cronjob
+        cronjob:
+          schedule: "0 9 * * 0"
+          concurrencyPolicy: Forbid
+          backoffLimit: 0
+          ttlSecondsAfterFinished: 86400
+          successfulJobsHistory: 1
+          failedJobsHistory: 1
+        pod:
+          automountServiceAccountToken: false
+          securityContext:
+            runAsUser: 65534
+            runAsGroup: 65534
+            runAsNonRoot: true
+        containers:
+          app:
+            image:
+              repository: docker.io/curlimages/curl
+              tag: 8.23.0@sha256:3fb7e13e5d179a845c97d78204f3f1064d1907037f26a3ebf91710571151fd93
+            command: [sh, /scripts/renovate-check.sh]
+            env:
+              FORGEJO_URL: https://code.neffi.fr
+              REPO: Neffi42/homelab
+              BOT: bot-oliver
+              MAX_AGE_DAYS: "4"
+              MATRIX_ADDRESS: http://continuwuity.matrix.svc.cluster.local
+              MATRIX_ROOM: "!gPFPE-MqiqNH1zLGQbTpLwPiIedUn5F4PE6scgkeAVQ"
+              MATRIX_TOKEN:
+                valueFrom:
+                  secretKeyRef:
+                    name: matrix-alerts
+                    key: token
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 16Mi
+              limits:
+                memory: 64Mi
     persistence:
       work-volume:
         enabled: true
@@ -47,3 +91,11 @@ spec:
           renovate:
             renovate:
               - path: /tmp/renovate/
+      script:
+        type: configMap
+        name: renovate-check
+        advancedMounts:
+          check:
+            app:
+              - path: /scripts
+                readOnly: true

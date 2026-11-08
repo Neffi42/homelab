@@ -17,7 +17,7 @@ spec:
           caddy:
             image:
               repository: docker.io/caddy
-              tag: 2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
+              tag: 2.11.7-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
             env:
               XDG_DATA_HOME: /tmp/caddy-data
               XDG_CONFIG_HOME: /tmp/caddy-config

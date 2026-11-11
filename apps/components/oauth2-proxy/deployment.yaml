@@ -46,6 +46,8 @@ spec:
             # ForwardAuth target: 202 when authenticated, redirect to Kanidm otherwise.
             - --upstream=static://202
             - --reverse-proxy=true
+            # Only pods (Traefik) may set X-Forwarded-*.
+            - --trusted-proxy-ip=10.42.0.0/16
             - --skip-provider-button=true
             - --http-address=0.0.0.0:4180
           ports:

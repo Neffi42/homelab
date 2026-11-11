@@ -6,6 +6,8 @@ metadata:
   name: ${APP}-oauth2-proxy
 spec:
   forwardAuth:
+    # oauth2-proxy only answers 202 or a redirect.
+    maxResponseBodySize: 1048576
     # Root, not /oauth2/auth: unauthenticated requests get oauth2-proxy's redirect to Kanidm.
     address: http://${APP}-oauth2-proxy.${OAUTH2_PROXY_NAMESPACE}.svc.cluster.local:4180/
     trustForwardHeader: true

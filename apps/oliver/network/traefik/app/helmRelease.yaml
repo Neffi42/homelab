@@ -28,6 +28,9 @@ spec:
         enabled: true
         # TCPRoute is experimental-channel only.
         experimentalChannel: true
+        # Routes in these namespaces may target Traefik internals (api@internal for the dashboard).
+        crossProviderNamespaces:
+          - network
     ingressClass:
       enabled: false
     # Gateways are ours (network/traefik/config), not the chart's.

@@ -125,8 +125,36 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
 - Two Gateways exist cluster-wide: `public` (WAN-facing, ports 4443/2222 on the LAN IP) and
   `private` (Tailscale IP, port 443, also does port-53 DNS). New `HTTPRoute`/`TCPRoute` resources
   pick one of these via `parentRefs`, matching whether the service should be internet-reachable.
-  Both run on Envoy Gateway — a cross-namespace `parentRefs` entry **must** set
-  `namespace: network` explicitly, it does not default to the Gateway's namespace.
+  Both run on one Traefik (`apps/oliver/network/traefik`, Gateways in its `config/`) — a
+  cross-namespace `parentRefs` entry **must** set `namespace: network` explicitly, it does not default to the Gateway's namespace.
+- Traefik specifics:
+  - A Gateway listener's `port` is the Traefik entrypoint's **container** port, not the client-facing
+    one: the Traefik Service maps 443→8443 (`https-private`), 53→8053 (`dns-tcp`), etc. Clients still
+    use 443/53/4443/2222/8555.
+  - Exposure is the Traefik Service (`LoadBalancer` via k3s ServiceLB, so host ports on oliver, plus
+    `externalIPs` for the Tailscale IP). `spec.addresses` on the Gateways is ignored by Traefik; it's
+    only kept because `iac/dns` reads the `private` one.
+  - Public/private separation is per entrypoint (`https-public` vs `https-private`) plus the router
+    only forwarding 4443/2222. Traefik CRD routes without `entryPoints` land on `https-private` only
+    (`asDefault`).
+  - No Gateway API `UDPRoute` in Traefik: UDP (Pi-hole DNS, go2rtc WebRTC) uses `IngressRouteUDP`
+    naming the `dns-udp`/`webrtc-udp` entrypoint. UDP entrypoints must not share a container port
+    with any TCP listener (8054/8556 vs 8053/8555): the Gateway provider matches listeners to
+    entrypoints by port only and can pick the UDP one.
+  - Traefik features beyond Gateway API (ForwardAuth, …) are `traefik.io` `Middleware`s attached with
+    an `ExtensionRef` filter on the HTTPRoute rule (same namespace as the route).
+  - Dashboard: `traefik.neffi.fr` on `private` (HTTPRoute to `api@internal`, allowed by
+    `crossProviderNamespaces: [network]`).
+- Auth on routes (lessons from the Envoy → Traefik switch, where files/firefox/cam were briefly
+  served without auth):
+  - When the auth mechanism changes, ship the route changes first (they fail closed on the old
+    controller) and move the Gateways in a later step, never in the same reconcile.
+  - Never rename a protected route in the change that adds or moves its auth: Helm creates the new
+    route before deleting the old one, and for identical matches the oldest route wins, so the old
+    unprotected one keeps serving until it's deleted.
+  - Put the auth filter (`ExtensionRef` to the oauth2-proxy `Middleware`) on the catch-all rule and
+    leave only `/oauth2/` unfiltered: a missing Middleware disables only its own rule in Traefik,
+    and requests fall through to any broader rule.
 - **Node scheduling**: `raspberrypi` (the arm64 agent node) carries the taint
   `dedicated=slow-node:NoSchedule` — its SD card has almost no free space and its old HDD has a
   history of read-only-remount failures, so nothing PVC-backed should ever land there. PVC-less
@@ -140,7 +168,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   and the kopiur controller (not its webhook). The per-app oauth2-proxy pods (`apps/components/oauth2-proxy`)
   only carry the toleration, no preferred affinity: the scheduler picks either node. **Never** move admission
   webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
-  or anything on the ingress/recovery path (Envoy, Flux, CoreDNS) there: with `failurePolicy: Fail`,
+  or anything on the ingress/recovery path (Traefik, Flux, CoreDNS) there: with `failurePolicy: Fail`,
   a flaky Pi would block API writes cluster-wide. Default runner jobs land on arm64 normally and on amd64
   during a failover; `docker` (dind) jobs always run on amd64 oliver, so image builds still need an
   explicit `--platform` for arm64 output. Everything without the

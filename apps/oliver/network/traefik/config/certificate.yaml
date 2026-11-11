@@ -2,9 +2,6 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: neffi-fr-cert
-  annotations:
-    # Moving to another Flux Kustomization: never prune.
-    kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
   secretName: neffi-fr-tls
   issuerRef:

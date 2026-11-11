@@ -96,6 +96,6 @@ spec:
       spec:
         type: LoadBalancer
         externalTrafficPolicy: Local
-        # Tailscale address, as Envoy's private Service had.
+        # oliver's Tailscale address: clients of the private Gateway.
         externalIPs:
           - 100.110.121.73

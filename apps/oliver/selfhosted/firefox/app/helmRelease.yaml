@@ -81,6 +81,22 @@ spec:
           - name: private
             namespace: network
         rules:
-          - backendRefs:
+          # oauth2-proxy callback/sign-in, unauthenticated.
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /oauth2/
+            backendRefs:
+              - name: firefox-oauth2-proxy
+                port: 4180
+          # Everything else behind oauth2-proxy. Keep the filter on the catch-all: a broken
+          # Middleware disables only its own rule and requests fall through to broader rules.
+          - filters:
+              - type: ExtensionRef
+                extensionRef:
+                  group: traefik.io
+                  kind: Middleware
+                  name: firefox-oauth2-proxy
+            backendRefs:
               - name: firefox
                 port: *httpPort

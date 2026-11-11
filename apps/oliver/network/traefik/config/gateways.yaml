@@ -8,17 +8,21 @@ metadata:
     # Moving to another Flux Kustomization: never prune.
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
-  gatewayClassName: eg
+  gatewayClassName: traefik
+  # Not used by Traefik (exposure is its Service), read back by iac/dns for the Pi-hole records.
   addresses:
     - type: IPAddress
       value: "100.110.121.73"
     - type: IPAddress
       value: "fd7a:115c:a1e0::6601:794f"
+  # Listener ports are Traefik entrypoint container ports, not client-facing ports (see the
+  # traefik HelmRelease): https 8443 is served on 443, dns-tcp 8053 on 53.
+  # UDP (DNS, WebRTC) isn't Gateway API here: IngressRouteUDP in the apps.
   listeners:
     - name: https
       hostname: "*.neffi.fr"
       protocol: HTTPS
-      port: 443
+      port: 8443
       allowedRoutes:
         namespaces:
           from: All
@@ -29,7 +33,7 @@ spec:
     - name: https-base
       hostname: "neffi.fr"
       protocol: HTTPS
-      port: 443
+      port: 8443
       allowedRoutes:
         namespaces:
           from: All
@@ -37,32 +41,22 @@ spec:
         mode: Terminate
         certificateRefs:
           - name: "neffi-fr-tls"
-    - name: dns-udp
-      protocol: UDP
-      port: 53
-      allowedRoutes:
-        namespaces:
-          from: All
     - name: dns-tcp
       protocol: TCP
-      port: 53
+      port: 8053
       allowedRoutes:
         namespaces:
           from: All
     # go2rtc WebRTC media; signaling stays behind OIDC on the go2rtc HTTPRoute.
-    - name: webrtc-udp
-      protocol: UDP
+    - name: webrtc-tcp
+      protocol: TCP
       port: 8555
-      allowedRoutes: &webrtcRoutes
+      allowedRoutes:
         namespaces:
           from: Selector
           selector:
             matchLabels:
               kubernetes.io/metadata.name: home
-    - name: webrtc-tcp
-      protocol: TCP
-      port: 8555
-      allowedRoutes: *webrtcRoutes
 ---
 # yaml-language-server: $schema=https://schemas.neffi.fr/gateway.networking.k8s.io/gateway_v1.json
 apiVersion: gateway.networking.k8s.io/v1
@@ -73,7 +67,7 @@ metadata:
     # Moving to another Flux Kustomization: never prune.
     kustomize.toolkit.fluxcd.io/prune: disabled
 spec:
-  gatewayClassName: eg
+  gatewayClassName: traefik
   addresses:
     - type: IPAddress
       value: "192.168.1.42"

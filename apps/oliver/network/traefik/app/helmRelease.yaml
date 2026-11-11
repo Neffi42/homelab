@@ -43,6 +43,8 @@ spec:
       web: null
       websecure: null
       https-private:
+        # Traefik CRD routes that don't list entryPoints land here only, never on https-public.
+        asDefault: true
         port: 8443
         exposedPort: 443
         expose: &expose
@@ -86,6 +88,11 @@ spec:
     additionalArguments:
       # Default 3s idle UDP session is too short for WebRTC media.
       - --entryPoints.webrtc-udp.udp.timeout=30s
+    # ServiceLB binds these ports on oliver; WAN only reaches what the router forwards (4443, 2222).
     service:
       spec:
-        type: ClusterIP
+        type: LoadBalancer
+        externalTrafficPolicy: Local
+        # Tailscale address, as Envoy's private Service had.
+        externalIPs:
+          - 100.110.121.73

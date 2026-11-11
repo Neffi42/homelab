@@ -1,0 +1,14 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/traefik.io/ingressrouteudp_v1alpha1.json
+# Traefik has no Gateway API UDPRoute support.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: pi-hole-dns
+spec:
+  entryPoints:
+    - dns-udp
+  routes:
+    - services:
+        - name: pi-hole-dns-udp
+          port: 53

@@ -142,8 +142,6 @@ spec:
               - path: /data
     route:
       http:
-        # SecurityPolicy go2rtc-oidc targets this name; multiple routes would suffix it with -http.
-        forceRename: go2rtc
         kind: HTTPRoute
         hostnames:
           - "cam.neffi.fr"
@@ -151,19 +149,25 @@ spec:
           - name: private
             namespace: network
         rules:
-          - backendRefs:
+          # oauth2-proxy callback/sign-in, unauthenticated.
+          - matches:
+              - path:
+                  type: PathPrefix
+                  value: /oauth2/
+            backendRefs:
+              - name: go2rtc-oauth2-proxy
+                port: 4180
+          # Everything else behind oauth2-proxy. Keep the filter on the catch-all: a broken
+          # Middleware disables only its own rule and requests fall through to broader rules.
+          - filters:
+              - type: ExtensionRef
+                extensionRef:
+                  group: traefik.io
+                  kind: Middleware
+                  name: go2rtc-oauth2-proxy
+            backendRefs:
               - name: go2rtc
                 port: *go2ptzPort
-      udp:
-        kind: UDPRoute
-        parentRefs:
-          - name: private
-            namespace: network
-            sectionName: webrtc-udp
-        rules:
-          - backendRefs:
-              - name: go2rtc-webrtc-udp
-                port: *webrtcPort
       tcp:
         kind: TCPRoute
         parentRefs:

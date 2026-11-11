@@ -44,6 +44,10 @@ spec:
                     values: [raspberrypi]
     bitwarden-sdk-server:
       enabled: true
+      # Server doesn't hot-reload its cert: without a restart on renewal of the
+      # self-signed bitwarden-tls-certs, every ExternalSecret fails x509 verification.
+      deploymentAnnotations:
+        reloader.stakater.com/auto: "true"
       tolerations:
         - key: dedicated
           operator: Equal

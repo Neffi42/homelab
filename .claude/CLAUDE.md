@@ -137,7 +137,8 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   the `docker` dind podspec deliberately is not — image builds took 25+ min on the Pi),
   the external-secrets controller/cert-controller/bitwarden-sdk-server, the cert-manager
   controller/cainjector, reloader, element-web, plugin-barman-cloud, rclone-s3, mautrix-whatsapp,
-  and the kopiur controller (not its webhook). **Never** move admission
+  and the kopiur controller (not its webhook). The per-app oauth2-proxy pods (`apps/components/oauth2-proxy`)
+  only carry the toleration, no preferred affinity: the scheduler picks either node. **Never** move admission
   webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
   or anything on the ingress/recovery path (Envoy, Flux, CoreDNS) there: with `failurePolicy: Fail`,
   a flaky Pi would block API writes cluster-wide. Default runner jobs land on arm64 normally and on amd64
@@ -200,6 +201,14 @@ nothing ever claims it, so it just sits `AwaitingClaim` forever (a documented-sa
 kept so a real populator-capable StorageClass, if one ever arrives, only needs a PVC with a matching
 `dataSourceRef` added, not a new `Restore`. Don't reintroduce a `pvc.yaml` here without first
 confirming the target StorageClass's provisioner actually implements populators.
+
+`apps/components/oauth2-proxy` puts one oauth2-proxy (Deployment, Service, cookie secret from an
+external-secrets `Password` generator) plus a Traefik ForwardAuth `Middleware` in front of an app,
+using the app's own Kanidm client (`${APP}`, secret `${APP}-oauth-credentials`, callback
+`https://<host>/oauth2/callback`). Authorization stays in Kanidm's `scope_map`. Needs
+`OAUTH2_PROXY_HOST` and `OAUTH2_PROXY_NAMESPACE` substitutes and `dependsOn: traefik` (Middleware
+CRD). The app's HTTPRoute must send `PathPrefix /oauth2/` to `${APP}-oauth2-proxy:4180` unfiltered and
+put an `ExtensionRef` filter to the Middleware on its other rules.
 
 ## OpenTofu stacks (`iac/`)
 

@@ -8,8 +8,10 @@ metadata:
 spec:
   components:
     - ../../../../components/app-template
+    - ../../../../components/oauth2-proxy
   dependsOn:
     - name: local-path
+    - name: traefik
   healthChecks:
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
@@ -20,6 +22,8 @@ spec:
   postBuild:
     substitute:
       APP: firefox
+      OAUTH2_PROXY_HOST: firefox.neffi.fr
+      OAUTH2_PROXY_NAMESPACE: selfhosted
   prune: true
   sourceRef:
     kind: GitRepository

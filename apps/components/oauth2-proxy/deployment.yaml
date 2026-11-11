@@ -1,0 +1,91 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kubernetes-definitions#/definitions/io.k8s.api.apps.v1.Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP}-oauth2-proxy
+  labels: &labels
+    app.kubernetes.io/name: oauth2-proxy
+    app.kubernetes.io/instance: ${APP}-oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: *labels
+  template:
+    metadata:
+      labels: *labels
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      # PVC-less and not a webhook: may run on the Pi, no preference either way.
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: slow-node
+          effect: NoSchedule
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.6
+          args:
+            - --provider=oidc
+            - --oidc-issuer-url=https://auth.neffi.fr/oauth2/openid/${APP}
+            - --client-id=${APP}
+            - --client-secret-file=/etc/oauth2-proxy/client-secret
+            - --cookie-secret-file=/etc/oauth2-proxy/cookie-secret
+            - --redirect-url=https://${OAUTH2_PROXY_HOST}/oauth2/callback
+            # Kanidm enforces PKCE on these clients.
+            - --code-challenge-method=S256
+            - --scope=openid profile email
+            # Authorization is the Kanidm client's scope_map, not oauth2-proxy.
+            - --email-domain=*
+            # ForwardAuth target: 202 when authenticated, redirect to Kanidm otherwise.
+            - --upstream=static://202
+            - --reverse-proxy=true
+            - --skip-provider-button=true
+            - --http-address=0.0.0.0:4180
+          ports:
+            - name: http
+              containerPort: 4180
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: secrets
+              mountPath: /etc/oauth2-proxy
+              readOnly: true
+      volumes:
+        - name: secrets
+          projected:
+            sources:
+              - secret:
+                  name: ${APP}-oauth-credentials
+                  items:
+                    - key: client-secret
+                      path: client-secret
+              - secret:
+                  name: ${APP}-oauth2-proxy-cookie
+                  items:
+                    - key: password
+                      path: cookie-secret

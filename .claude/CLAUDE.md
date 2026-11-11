@@ -63,6 +63,10 @@ same names, so every app `ks.yaml`'s `sourceRef` keeps working. `spec.distributi
 single source of truth for the Flux version (Renovate tracks it via a custom regex manager against
 `controlplaneio-fluxcd/distribution`); don't hand-bump controller images anywhere.
 
+`sync.url` points at Forgejo's in-cluster Service (`forgejo-http.forgejo.svc:3000`), not
+`code.neffi.fr`, so Flux can still pull a fix when the Gateways, Pi-hole DNS or the router's hairpin
+NAT are broken.
+
 Gateway API CRDs (experimental channel, needed for TCPRoute) are owned by
 `apps/oliver/network/gateway-api/` (a `GitRepository` on `kubernetes-sigs/gateway-api`, Renovate-tracked
 tag), not by the gateway controller's chart. They carry `kustomize.toolkit.fluxcd.io/prune: disabled`:

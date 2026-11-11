@@ -8,3 +8,4 @@ resources:
   - ./envoy-gateway/ks.yaml
   - ./gateway-api/ks.yaml
   - ./pi-hole/ks.yaml
+  - ./traefik/ks.yaml

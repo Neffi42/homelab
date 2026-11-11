@@ -1,0 +1,85 @@
+# yaml-language-server: $schema=https://schemas.neffi.fr/helm.toolkit.fluxcd.io/helmrelease_v2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: traefik
+spec:
+  interval: 1h
+  chartRef:
+    kind: OCIRepository
+    name: traefik
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    providers:
+      kubernetesCRD:
+        enabled: true
+      kubernetesIngress:
+        enabled: false
+      kubernetesGateway:
+        enabled: true
+        # TCPRoute is experimental-channel only.
+        experimentalChannel: true
+    ingressClass:
+      enabled: false
+    # Gateways are ours (network/traefik/config), not the chart's.
+    gateway:
+      enabled: false
+    gatewayClass:
+      name: traefik
+    # A Gateway listener's port must equal its entrypoint's container port; the Service maps the
+    # client-facing port to it.
+    # UDP entrypoints must not share a container port with any TCP listener: the Gateway provider
+    # matches listeners to entrypoints by port only and can pick the UDP one.
+    ports:
+      web: null
+      websecure: null
+      https-private:
+        port: 8443
+        exposedPort: 443
+        expose: &expose
+          default: true
+        protocol: TCP
+        transport: &noReadTimeout
+          respondingTimeouts:
+            # Default 60s caps the whole request body read: cuts long uploads.
+            readTimeout: "0s"
+      https-public:
+        port: 4443
+        exposedPort: 4443
+        expose: *expose
+        protocol: TCP
+        transport: *noReadTimeout
+      ssh:
+        port: 2222
+        exposedPort: 2222
+        expose: *expose
+        protocol: TCP
+      dns-tcp:
+        port: 8053
+        exposedPort: 53
+        expose: *expose
+        protocol: TCP
+      dns-udp:
+        port: 8054
+        exposedPort: 53
+        expose: *expose
+        protocol: UDP
+      webrtc-tcp:
+        port: 8555
+        exposedPort: 8555
+        expose: *expose
+        protocol: TCP
+      webrtc-udp:
+        port: 8556
+        exposedPort: 8555
+        expose: *expose
+        protocol: UDP
+    additionalArguments:
+      # Default 3s idle UDP session is too short for WebRTC media.
+      - --entryPoints.webrtc-udp.udp.timeout=30s
+    service:
+      spec:
+        type: ClusterIP

@@ -10,6 +10,10 @@ spec:
     name: plugin-barman-cloud
   interval: 1h
   values:
+    # Plugin doesn't hot-reload its self-signed barman-cloud-{server,client}-tls certs on renewal.
+    # Pod-level: the chart only exposes commonAnnotations (all resources) for the Deployment.
+    podAnnotations:
+      reloader.stakater.com/auto: "true"
     tolerations:
       - key: dedicated
         operator: Equal

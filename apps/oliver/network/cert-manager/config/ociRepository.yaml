@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: cert-manager-webhook-ovh
+spec:
+  interval: 1h
+  url: oci://ghcr.io/aureq/charts/cert-manager-webhook-ovh
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: "0.9.19"
+    digest: sha256:e60d7bc288095e3cfb651f2c8ad4cae62a74f06fcbd5e49a06320247a86b37ea

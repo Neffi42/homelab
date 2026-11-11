@@ -5,13 +5,9 @@ metadata:
   name: reloader
 spec:
   interval: 10m
-  chart:
-    spec:
-      chart: reloader
-      version: "2.2.19"
-      sourceRef:
-        kind: HelmRepository
-        name: stakater
+  chartRef:
+    kind: OCIRepository
+    name: reloader
   values:
     fullnameOverride: reloader
     reloader:

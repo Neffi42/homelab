@@ -5,13 +5,9 @@ metadata:
   name: cert-manager-config
 spec:
   interval: 10m
-  chart:
-    spec:
-      chart: cert-manager-webhook-ovh
-      version: "0.9.19"
-      sourceRef:
-        kind: HelmRepository
-        name: cert-manager-config
+  chartRef:
+    kind: OCIRepository
+    name: cert-manager-webhook-ovh
   values:
     groupName: acme.neffi.fr
     certManager:

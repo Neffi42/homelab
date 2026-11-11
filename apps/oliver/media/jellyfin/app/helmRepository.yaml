@@ -4,5 +4,5 @@ kind: HelmRepository
 metadata:
   name: jellyfin
 spec:
-  interval: 24h
+  interval: 1h
   url: https://jellyfin.github.io/jellyfin-helm/

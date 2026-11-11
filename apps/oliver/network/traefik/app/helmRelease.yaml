@@ -13,9 +13,15 @@ spec:
   upgrade:
     crds: CreateReplace
   values:
+    global:
+      # Drop headers whose name aliases another (X_Auth_User for X-Auth-User): CGI-style backends
+      # would read them as the header Traefik manages.
+      aliasHeadersStrategy: delete
     providers:
       kubernetesCRD:
         enabled: true
+        # Collision-safe generated names (namespace_name@kubernetescrd).
+        safeNaming: true
       kubernetesIngress:
         enabled: false
       kubernetesGateway:

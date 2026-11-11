@@ -129,8 +129,9 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   cross-namespace `parentRefs` entry **must** set `namespace: network` explicitly, it does not default to the Gateway's namespace.
 - Traefik specifics:
   - A Gateway listener's `port` is the Traefik entrypoint's **container** port, not the client-facing
-    one: the Traefik Service maps 443→8443 (`https-private`), 53→8053 (`dns-tcp`), etc. Clients still
-    use 443/53/4443/2222/8555.
+    one. They're equal for every TCP entrypoint (443, 4443, 2222, 53, 8555); Traefik binds 443/53 as
+    non-root via the pod sysctl `net.ipv4.ip_unprivileged_port_start=0`. Only the UDP entrypoints
+    differ: the Service maps 53/udp→54 (`dns-udp`) and 8555/udp→8556 (`webrtc-udp`).
   - Exposure is the Traefik Service (`LoadBalancer` via k3s ServiceLB, so host ports on oliver, plus
     `externalIPs` for the Tailscale IP). `spec.addresses` on the Gateways is ignored by Traefik; it's
     only kept because `iac/dns` reads the `private` one.
@@ -139,7 +140,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
     (`asDefault`).
   - No Gateway API `UDPRoute` in Traefik: UDP (Pi-hole DNS, go2rtc WebRTC) uses `IngressRouteUDP`
     naming the `dns-udp`/`webrtc-udp` entrypoint. UDP entrypoints must not share a container port
-    with any TCP listener (8054/8556 vs 8053/8555): the Gateway provider matches listeners to
+    with any TCP listener (54/8556 vs 53/8555): the Gateway provider matches listeners to
     entrypoints by port only and can pick the UDP one.
   - Traefik features beyond Gateway API (ForwardAuth, …) are `traefik.io` `Middleware`s attached with
     an `ExtensionRef` filter on the HTTPRoute rule (same namespace as the route).

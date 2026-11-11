@@ -12,14 +12,14 @@ spec:
       value: "100.110.121.73"
     - type: IPAddress
       value: "fd7a:115c:a1e0::6601:794f"
-  # Listener ports are Traefik entrypoint container ports, not client-facing ports (see the
-  # traefik HelmRelease): https 8443 is served on 443, dns-tcp 8053 on 53.
+  # Listener ports are Traefik entrypoint container ports (see the traefik HelmRelease); they match
+  # the client-facing ports here.
   # UDP (DNS, WebRTC) isn't Gateway API here: IngressRouteUDP in the apps.
   listeners:
     - name: https
       hostname: "*.neffi.fr"
       protocol: HTTPS
-      port: 8443
+      port: 443
       allowedRoutes:
         namespaces:
           from: All
@@ -30,7 +30,7 @@ spec:
     - name: https-base
       hostname: "neffi.fr"
       protocol: HTTPS
-      port: 8443
+      port: 443
       allowedRoutes:
         namespaces:
           from: All
@@ -40,7 +40,7 @@ spec:
           - name: "neffi-fr-tls"
     - name: dns-tcp
       protocol: TCP
-      port: 8053
+      port: 53
       allowedRoutes:
         namespaces:
           from: All

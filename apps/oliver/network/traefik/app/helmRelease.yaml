@@ -38,8 +38,14 @@ spec:
       enabled: false
     gatewayClass:
       name: traefik
+    # Lets the non-root Traefik bind 443/53 directly. Only affects the pod's own network namespace;
+    # containerd 2.x already defaults to this, set explicitly so it doesn't depend on runtime config.
+    podSecurityContext:
+      sysctls:
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "0"
     # A Gateway listener's port must equal its entrypoint's container port; the Service maps the
-    # client-facing port to it.
+    # client-facing port to it (only the UDP entrypoints differ).
     # UDP entrypoints must not share a container port with any TCP listener: the Gateway provider
     # matches listeners to entrypoints by port only and can pick the UDP one.
     ports:
@@ -48,7 +54,7 @@ spec:
       https-private:
         # Traefik CRD routes that don't list entryPoints land here only, never on https-public.
         asDefault: true
-        port: 8443
+        port: 443
         exposedPort: 443
         expose: &expose
           default: true
@@ -69,12 +75,12 @@ spec:
         expose: *expose
         protocol: TCP
       dns-tcp:
-        port: 8053
+        port: 53
         exposedPort: 53
         expose: *expose
         protocol: TCP
       dns-udp:
-        port: 8054
+        port: 54
         exposedPort: 53
         expose: *expose
         protocol: UDP

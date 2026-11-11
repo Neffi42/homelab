@@ -63,6 +63,12 @@ same names, so every app `ks.yaml`'s `sourceRef` keeps working. `spec.distributi
 single source of truth for the Flux version (Renovate tracks it via a custom regex manager against
 `controlplaneio-fluxcd/distribution`); don't hand-bump controller images anywhere.
 
+Gateway API CRDs (experimental channel, needed for TCPRoute) are owned by
+`apps/oliver/network/gateway-api/` (a `GitRepository` on `kubernetes-sigs/gateway-api`, Renovate-tracked
+tag), not by the gateway controller's chart. They carry `kustomize.toolkit.fluxcd.io/prune: disabled`:
+deleting a CRD deletes every Gateway and route of that kind. Don't bump the tag past the Gateway API
+version the gateway controller supports.
+
 The operator itself is under GitOps at `apps/oliver/flux-system/flux-operator/` (OCIRepository +
 HelmRelease, adopting the Helm release created at bootstrap time). Its status web UI is on the
 `private` Gateway at `flux.neffi.fr`. That category deliberately has **no `namespace.yaml`** —

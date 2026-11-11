@@ -1,0 +1,36 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/gitrepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: gateway-api
+  namespace: flux-system
+spec:
+  interval: 24h
+  url: https://github.com/kubernetes-sigs/gateway-api
+  ref:
+    # Experimental channel: TCPRoute is not in standard. Don't go past what the gateway
+    # controller supports.
+    tag: v1.6.1
+  ignore: |
+    /*
+    !/config/crd/experimental/
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/kustomization-kustomize-v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gateway-api-crds
+  namespace: flux-system
+spec:
+  # Deleting a CRD deletes every Gateway/route in the cluster: never let Flux prune them.
+  commonMetadata:
+    annotations:
+      kustomize.toolkit.fluxcd.io/prune: disabled
+  interval: 1h
+  path: "./config/crd/experimental"
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: gateway-api
+  timeout: 5m

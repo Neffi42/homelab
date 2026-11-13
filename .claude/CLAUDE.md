@@ -15,7 +15,6 @@ the workloads defined here (`apps/oliver/forgejo`). Standard git, no other VCS l
 ## Toolchain
 
 Tool versions are pinned via `mise.toml` (mise-en-place) — run `mise install` once per checkout.
-Key tools: `flux2`, `opentofu`, `kubectl`, `tofu-ls`, `yaml-language-server`, `kanidm_tools`, `flate`.
 `KUBECONFIG` is set by mise's `[env]` block.
 
 There is no linter/test runner in this repo. Validate changes by:
@@ -34,20 +33,6 @@ YAML files carry `# yaml-language-server: $schema=...` comment headers pointing 
 on new files of the same kind — they're what gives editors real completion/validation here.
 
 ## Repository layout
-
-```
-apps/
-  oliver/<category>/<app>/     # the cluster's tree — covers both nodes; per-node scheduling
-                                # (nodeSelector/tolerations) lives inside individual app manifests
-  components/<name>/           # shared Kustomize Components (kind: Component), see below
-flux/oliver/                   # flux-instance.yaml (the FluxInstance driving flux-operator)
-                                # + apps.yaml, the root Kustomization pointing at ./apps/oliver
-iac/<stack>/                   # OpenTofu stacks, applied only by Forgejo Actions, state in-cluster (see below)
-k3s/oliver/config.yaml         # k3s server config (tls-san, disabled components) for the
-                                # control-plane node, for reference
-k3s/raspberrypi/config.yaml    # k3s agent config for the raspberrypi node, for reference
-scripts/                       # scripts run by Forgejo Actions workflows, plus manual ops scripts
-```
 
 `flux/oliver/apps.yaml` is the single root `Kustomization` (path `./apps/oliver`) that Flux
 reconciles from; it patches sane defaults (`interval: 1h`, `prune: true`, `wait: false`) onto every
@@ -87,21 +72,6 @@ Rebuilding the cluster from scratch is three manual steps, then git takes over:
 3. `kubectl apply -f flux/oliver/flux-instance.yaml`
 
 ### App directory pattern
-
-Apps generally nest three levels under `apps/oliver/<category>/`:
-
-```
-<category>/<app>/
-  namespace.yaml           # only when the app owns its own namespace
-  kustomization.yaml       # kustomize resources: [./namespace.yaml, ./<app>/ks.yaml]
-  <app>/
-    ks.yaml                 # the Flux Kustomization: path -> ./<app>/app, dependsOn, healthChecks
-    app/
-      kustomization.yaml    # resources: helmRelease.yaml, ociRepository.yaml, externalSecret.yaml
-      helmRelease.yaml       # chartRef -> OCIRepository (not HelmRepository, for OCI charts)
-      ociRepository.yaml     # pinned chart tag; Renovate bumps this
-      externalSecret.yaml    # pulls from Bitwarden Secrets Manager (see below), may be multi-doc
-```
 
 Some apps split `app/` (workload) from `config/` (CRs applied after, e.g. cert-manager's
 ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustomizations with a
@@ -268,8 +238,5 @@ lack the `TF_VAR_*` inputs anyway; `validate` is the local check. Backend is `ku
 
 ## Renovate
 
-`renovate.json` scans `*.yaml`/`*.yaml.j2` for the `flux`, `helm-values`, and `kubernetes`
-managers (so HelmRelease chart versions and OCIRepository tags are kept current automatically),
-plus a custom regex manager for Forgejo's `tag`+`digest` pair specifically. Minor/patch/pin/digest
-updates auto-merge; majors open a PR. Don't hand-bump versions that Renovate already tracks —
-let it open the PR, or edit both `tag`/`digest` fields it expects if doing so manually.
+Don't hand-bump versions that Renovate already tracks (`renovate.json`) — let it open the PR, or
+edit both `tag`/`digest` fields it expects if doing so manually.

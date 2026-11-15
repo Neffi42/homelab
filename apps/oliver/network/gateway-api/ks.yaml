@@ -11,7 +11,7 @@ spec:
   ref:
     # Experimental channel: TCPRoute is not in standard. Don't go past what the gateway
     # controller supports.
-    tag: v1.6.1
+    tag: v1.7.0
   ignore: |
     /*
     !/config/crd/experimental/

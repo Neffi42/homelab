@@ -220,3 +220,36 @@ resource "kanidm_oauth2_basic" "firefox" {
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }
+
+resource "kanidm_oauth2_basic" "miniflux" {
+  name                  = "miniflux"
+  displayname           = "Miniflux"
+  origin                = var.miniflux_url
+  prefer_short_username = true
+
+  redirect_uris = [
+    "${var.miniflux_url}oauth2/oidc/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "readeck" {
+  name                  = "readeck"
+  displayname           = "Readeck"
+  origin                = var.readeck_url
+  prefer_short_username = true
+
+  redirect_uris = [
+    "${var.readeck_url}login/oidc"
+  ]
+
+  # Readeck only requests "groups" (group SPNs), never "groups_name".
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups"]
+  }
+}

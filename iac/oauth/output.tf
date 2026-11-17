@@ -39,3 +39,15 @@ output "firefox_oauth_secret" {
   value       = kanidm_oauth2_basic.firefox.client_secret
   sensitive   = true
 }
+
+output "miniflux_oauth_secret" {
+  description = "OAuth2 client secret for Miniflux"
+  value       = kanidm_oauth2_basic.miniflux.client_secret
+  sensitive   = true
+}
+
+output "readeck_oauth_secret" {
+  description = "OAuth2 client secret for Readeck"
+  value       = kanidm_oauth2_basic.readeck.client_secret
+  sensitive   = true
+}

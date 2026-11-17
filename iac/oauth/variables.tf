@@ -63,3 +63,15 @@ variable "firefox_url" {
   type        = string
   default     = "https://firefox.neffi.fr/"
 }
+
+variable "miniflux_url" {
+  description = "Url of the Miniflux instance"
+  type        = string
+  default     = "https://rss.neffi.fr/"
+}
+
+variable "readeck_url" {
+  description = "Url of the Readeck instance"
+  type        = string
+  default     = "https://read.neffi.fr/"
+}

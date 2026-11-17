@@ -31,3 +31,25 @@ spec:
   name: mautrix_whatsapp
   owner: mautrix_whatsapp
   ensure: present
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: miniflux
+spec:
+  cluster:
+    name: cnpg-cluster
+  name: miniflux
+  owner: miniflux
+  ensure: present
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: readeck
+spec:
+  cluster:
+    name: cnpg-cluster
+  name: readeck
+  owner: readeck
+  ensure: present

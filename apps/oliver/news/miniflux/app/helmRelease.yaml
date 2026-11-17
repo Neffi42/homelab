@@ -1,0 +1,98 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: miniflux
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: miniflux
+  interval: 1h
+  driftDetection:
+    mode: enabled
+  values:
+    controllers:
+      miniflux:
+        strategy: RollingUpdate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        pod:
+          tolerations:
+            - key: dedicated
+              operator: Equal
+              value: slow-node
+              effect: NoSchedule
+        containers:
+          app:
+            image:
+              repository: ghcr.io/miniflux/miniflux
+              tag: 2.3.5@sha256:8fd6c3c434ecc3d4083306f83e03c0bb74c632e0f8378da5ead7e1773b0b89c9
+            env:
+              TZ: Europe/Paris
+              BASE_URL: https://rss.neffi.fr
+              RUN_MIGRATIONS: "1"
+              DISABLE_LOCAL_AUTH: "1"
+              OAUTH2_PROVIDER: oidc
+              OAUTH2_OIDC_PROVIDER_NAME: Kanidm
+              OAUTH2_OIDC_DISCOVERY_ENDPOINT: https://auth.neffi.fr/oauth2/openid/miniflux
+              OAUTH2_CLIENT_ID: miniflux
+              OAUTH2_REDIRECT_URL: https://rss.neffi.fr/oauth2/oidc/callback
+              OAUTH2_USER_CREATION: "1"
+              OAUTH2_ADDITIONAL_SCOPES: groups_name
+              OAUTH2_GROUP_CLAIM: groups
+              OAUTH2_ADMIN_GROUP: app_admins
+              # Readeck is reached through its in-cluster Service.
+              INTEGRATION_ALLOW_PRIVATE_NETWORKS: "1"
+            envFrom:
+              - secretRef:
+                  name: miniflux
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    path: /healthcheck
+                    port: &httpPort 8080
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 10m
+                memory: 64Mi
+              limits:
+                memory: 256Mi
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
+    service:
+      miniflux:
+        controller: miniflux
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "rss.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: miniflux
+                port: *httpPort

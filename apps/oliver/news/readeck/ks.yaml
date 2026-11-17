@@ -1,0 +1,37 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/kustomize.toolkit.fluxcd.io/kustomization_v1.json
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: readeck
+  namespace: flux-system
+spec:
+  components:
+    - ../../../../components/kopiur
+    - ../../../../components/app-template
+  dependsOn:
+    - name: local-path
+    - name: cnpg-cluster
+    - name: kanidm
+    - name: kopiur-config
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: readeck
+      namespace: news
+    - apiVersion: kopiur.home-operations.com/v1alpha1
+      kind: SnapshotPolicy
+      name: readeck
+      namespace: news
+  interval: 1h
+  path: ./apps/oliver/news/readeck/app
+  postBuild:
+    substitute:
+      APP: readeck
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  targetNamespace: news
+  timeout: 5m

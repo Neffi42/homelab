@@ -44,3 +44,15 @@ spec:
         superuser: false
         passwordSecret:
           name: mautrix-whatsapp-credentials
+      - name: miniflux
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: miniflux-credentials
+      - name: readeck
+        ensure: present
+        login: true
+        superuser: false
+        passwordSecret:
+          name: readeck-credentials

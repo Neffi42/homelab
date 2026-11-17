@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Upgrade k3s on both nodes to the current stable channel release.
 # Server (oliver) first, then agent (raspberrypi). Needs ssh access + sudo on both,
-# and a working KUBECONFIG (mise sets it).
+# and a working KUBECONFIG (the nix dev shell sets it).
 set -euo pipefail
 
 SERVER=oliver

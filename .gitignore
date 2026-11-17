@@ -81,3 +81,6 @@ go.work.sum
 *.retry
 .ansible/
 
+
+# ---> direnv
+.direnv/

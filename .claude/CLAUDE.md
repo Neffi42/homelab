@@ -14,8 +14,10 @@ the workloads defined here (`apps/oliver/forgejo`). Standard git, no other VCS l
 
 ## Toolchain
 
-Tool versions are pinned via `mise.toml` (mise-en-place) — run `mise install` once per checkout.
-`KUBECONFIG` is set by mise's `[env]` block.
+Tools come from the Nix flake dev shell (`flake.nix`, versions pinned by `flake.lock`): `nix develop`,
+or automatically via direnv (`.envrc` is `use flake`; run `direnv allow` once per checkout). Bump with
+`nix flake update`; `flate` is fetched from its GitHub release (not in nixpkgs), so bump its `version`
+and hashes in `flake.nix` by hand. `KUBECONFIG`, `KUBE_CONFIG_PATH` and `KANIDM_URL` are set by the shell.
 
 There is no linter/test runner in this repo. Validate changes by:
 - `kubectl kustomize <dir>` — locally builds a `kustomization.yaml` to catch structural errors before pushing.

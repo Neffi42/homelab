@@ -139,7 +139,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   the external-secrets controller/cert-controller/bitwarden-sdk-server, the cert-manager
   controller/cainjector, reloader, element-web, plugin-barman-cloud, rclone-s3, mautrix-whatsapp,
   and the kopiur controller (not its webhook). The per-app oauth2-proxy pods (`apps/components/oauth2-proxy`)
-  only carry the toleration, no preferred affinity: the scheduler picks either node. **Never** move admission
+  and Miniflux only carry the toleration, no preferred affinity: the scheduler picks either node. **Never** move admission
   webhooks (cert-manager, external-secrets, kopiur, cnpg-operator, whose webhook runs in-process)
   or anything on the ingress/recovery path (Traefik, Flux, CoreDNS) there: with `failurePolicy: Fail`,
   a flaky Pi would block API writes cluster-wide. Default runner jobs land on arm64 normally and on amd64

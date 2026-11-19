@@ -318,21 +318,3 @@ resource "bitwarden_secret" "oauth2_client_secret" {
   project_id = var.bitwarden_project_id
   note       = "Managed by iac/oauth"
 }
-
-# Secrets created by hand before tofu managed them; drop once applied.
-import {
-  for_each = {
-    continuwuity = "6fdf8fc0-7667-4d8f-b430-b4a500db297a"
-    dufs         = "bb1d494a-b866-443d-93f2-b4d200efe064"
-    fb_quantum   = "ad80d021-959f-40e9-89a4-b457007375e8"
-    firefox      = "5fe790e2-4464-4b54-8d3f-b4d200ef9699"
-    flux         = "9b6141ef-8fba-414e-926f-b50700cf8dbb"
-    forgejo      = "d49ced84-3a5c-4d00-9c35-b458010b3a95"
-    go2rtc       = "031ea2b2-428b-42d3-9f68-b4d200f02f34"
-    miniflux     = "c077d2d0-4c30-4e4b-96a3-b50500e48497"
-    readeck      = "3baa3bdf-6cc1-4ff8-8da7-b50500e49406"
-    traefik      = "161707ff-f8e0-4d58-ac6a-b50700cf7f45"
-  }
-  to = bitwarden_secret.oauth2_client_secret[each.key]
-  id = each.value
-}

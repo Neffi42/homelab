@@ -13,6 +13,7 @@ spec:
     priorityClassName: system-cluster-critical
     web:
       enabled: true
+      configSecretName: flux-operator-web-config
       httpRoute:
         enabled: true
         hostnames:

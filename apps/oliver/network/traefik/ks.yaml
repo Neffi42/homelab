@@ -30,6 +30,8 @@ metadata:
   name: traefik-config
   namespace: flux-system
 spec:
+  components:
+    - ../../../../components/oauth2-proxy
   dependsOn:
     - name: cert-manager-config
     - name: traefik
@@ -44,6 +46,11 @@ spec:
       namespace: network
   interval: 1h
   path: "./apps/oliver/network/traefik/config"
+  postBuild:
+    substitute:
+      APP: traefik
+      OAUTH2_PROXY_HOST: traefik.neffi.fr
+      OAUTH2_PROXY_NAMESPACE: network
   prune: true
   sourceRef:
     kind: GitRepository

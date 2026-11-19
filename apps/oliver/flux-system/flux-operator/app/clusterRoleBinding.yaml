@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://json.schemastore.org/kubernetes-definitions#/definitions/io.k8s.api.rbac.v1.ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: flux-web-app-admins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flux-web-admin
+subjects:
+  # Kanidm group, impersonated by the web UI.
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: app_admins

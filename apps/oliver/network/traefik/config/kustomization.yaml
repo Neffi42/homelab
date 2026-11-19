@@ -4,5 +4,6 @@ kind: Kustomization
 
 resources:
   - ./certificate.yaml
+  - ./externalSecret.yaml
   - ./gateways.yaml
   - ./httpRoute.yaml

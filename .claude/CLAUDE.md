@@ -62,7 +62,8 @@ version the gateway controller supports.
 
 The operator itself is under GitOps at `apps/oliver/flux-system/flux-operator/` (OCIRepository +
 HelmRelease, adopting the Helm release created at bootstrap time). Its status web UI is on the
-`private` Gateway at `flux.neffi.fr`. That category deliberately has **no `namespace.yaml`** —
+`private` Gateway at `flux.neffi.fr`, behind its built-in OIDC login (Kanidm client `flux`, `app_admins`
+impersonated and bound to `flux-web-admin`). That category deliberately has **no `namespace.yaml`** —
 `flux-system` is part of the distribution manifests the operator owns.
 
 Rebuilding the cluster from scratch is three manual steps, then git takes over:
@@ -118,7 +119,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   - Traefik features beyond Gateway API (ForwardAuth, …) are `traefik.io` `Middleware`s attached with
     an `ExtensionRef` filter on the HTTPRoute rule (same namespace as the route).
   - Dashboard: `traefik.neffi.fr` on `private` (HTTPRoute to `api@internal`, allowed by
-    `crossProviderNamespaces: [network]`).
+    `crossProviderNamespaces: [network]`), behind the oauth2-proxy component on `traefik-config`.
 - Auth on routes (lessons from the Envoy → Traefik switch, where files/firefox/cam were briefly
   served without auth):
   - When the auth mechanism changes, ship the route changes first (they fail closed on the old

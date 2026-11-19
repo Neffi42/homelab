@@ -25,8 +25,23 @@ spec:
               type: ReplaceFullPath
               replaceFullPath: /dashboard/
             statusCode: 302
-    # Dashboard (/dashboard/) and its API (/api/).
-    - backendRefs:
+    # oauth2-proxy callback/sign-in, unauthenticated.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /oauth2/
+      backendRefs:
+        - name: traefik-oauth2-proxy
+          port: 4180
+    # Dashboard (/dashboard/) and its API (/api/). Keep the filter on the catch-all: a broken
+    # Middleware disables only its own rule and requests fall through to broader rules.
+    - filters:
+        - type: ExtensionRef
+          extensionRef:
+            group: traefik.io
+            kind: Middleware
+            name: traefik-oauth2-proxy
+      backendRefs:
         - group: traefik.io
           kind: TraefikService
           name: api@internal

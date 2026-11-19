@@ -87,3 +87,9 @@ variable "flux_url" {
   type        = string
   default     = "https://flux.neffi.fr/"
 }
+
+variable "bitwarden_project_id" {
+  description = "Bitwarden Secrets Manager project receiving the OAuth2 client secrets"
+  type        = string
+  default     = "94043aae-da1a-4c68-adac-b50700d2311a"
+}

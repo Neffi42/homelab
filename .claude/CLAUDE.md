@@ -227,6 +227,11 @@ under `apps/oliver/terraform` just hosts the Kubernetes-secret state backend):
   current `KUBECONFIG` context, oliver's LAN IP; runs against a single cluster/context
   now (no per-cluster fan-out).
 - `iac/oauth` — Kanidm persons/groups/OAuth2 clients (see above).
+  Each client is also listed in `local.oauth2_basic_clients`, which writes its secret to Bitwarden
+  Secrets Manager (`bitwarden_secret`, UUIDs in the `oauth2_client_secret_ids` output) for the
+  app's `ExternalSecret`. Secrets never leave CI otherwise: workflow logs and artifacts are public
+  (public repo). Rotate with `fj actions dispatch oauth.yml main -I rotate=<client…|all>`, which
+  replaces the client (the provider only reads its secret on create).
 
 Never run `tofu apply` locally — the workflows are the only writer to state:
 

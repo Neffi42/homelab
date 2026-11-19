@@ -75,3 +75,15 @@ variable "readeck_url" {
   type        = string
   default     = "https://read.neffi.fr/"
 }
+
+variable "traefik_url" {
+  description = "Url of the Traefik dashboard"
+  type        = string
+  default     = "https://traefik.neffi.fr/"
+}
+
+variable "flux_url" {
+  description = "Url of the Flux web UI"
+  type        = string
+  default     = "https://flux.neffi.fr/"
+}

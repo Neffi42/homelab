@@ -253,3 +253,33 @@ resource "kanidm_oauth2_basic" "readeck" {
     scopes = ["openid", "profile", "email", "groups"]
   }
 }
+
+resource "kanidm_oauth2_basic" "traefik" {
+  name        = "traefik"
+  displayname = "Traefik"
+  origin      = var.traefik_url
+
+  redirect_uris = [
+    "${var.traefik_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}
+
+resource "kanidm_oauth2_basic" "flux" {
+  name        = "flux"
+  displayname = "Flux"
+  origin      = var.flux_url
+
+  redirect_uris = [
+    "${var.flux_url}oauth2/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups_name"]
+  }
+}

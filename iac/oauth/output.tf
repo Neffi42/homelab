@@ -51,3 +51,15 @@ output "readeck_oauth_secret" {
   value       = kanidm_oauth2_basic.readeck.client_secret
   sensitive   = true
 }
+
+output "traefik_oauth_secret" {
+  description = "OAuth2 client secret for the Traefik dashboard"
+  value       = kanidm_oauth2_basic.traefik.client_secret
+  sensitive   = true
+}
+
+output "flux_oauth_secret" {
+  description = "OAuth2 client secret for the Flux web UI"
+  value       = kanidm_oauth2_basic.flux.client_secret
+  sensitive   = true
+}

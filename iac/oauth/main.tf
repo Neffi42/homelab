@@ -26,6 +26,7 @@ provider "kanidm" {
 # Secrets Manager machine account, token from BWS_ACCESS_TOKEN.
 provider "bitwarden" {
   client_implementation = "embedded"
+  server                = "https://vault.bitwarden.eu"
 }
 
 resource "kanidm_person" "neffi" {

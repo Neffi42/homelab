@@ -95,7 +95,8 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   pinned to a specific chart tag/digest — this is what Renovate's `flux`/`docker` managers bump
   (see `renovate.json`'s custom regex manager for the Forgejo image+digest pair specifically).
 - Two Gateways exist cluster-wide: `public` (WAN-facing, ports 4443/2222 on the LAN IP) and
-  `private` (Tailscale IP, port 443, also does port-53 DNS). New `HTTPRoute`/`TCPRoute` resources
+  `private` (LAN IP port 443, reached from the tailnet through oliver's `192.168.1.42/32` subnet
+  route; also does port-53 DNS). New `HTTPRoute`/`TCPRoute` resources
   pick one of these via `parentRefs`, matching whether the service should be internet-reachable.
   Both run on one Traefik (`apps/oliver/network/traefik`, Gateways in its `config/`) — a
   cross-namespace `parentRefs` entry **must** set `namespace: network` explicitly, it does not default to the Gateway's namespace.
@@ -222,7 +223,7 @@ under `apps/oliver/terraform` just hosts the Kubernetes-secret state backend):
   WAN IP) vs private (Pi-hole) by which Gateway (`public`/`private`) they reference, plus a
   `manual_dns_entries` var for anything not backed by an HTTPRoute. The private target IP is
   **not** a var — it's read back from the live `Gateway` named `private` (`spec.addresses`) in the
-  current `KUBECONFIG` context, oliver's own Tailscale IP; runs against a single cluster/context
+  current `KUBECONFIG` context, oliver's LAN IP; runs against a single cluster/context
   now (no per-cluster fan-out).
 - `iac/oauth` — Kanidm persons/groups/OAuth2 clients (see above).
 

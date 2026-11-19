@@ -118,9 +118,9 @@ spec:
               listen: ":1984"
             webrtc:
               listen: ":8555"
-              # Private Gateway's Tailscale IP, proxied to the webrtc-* Services.
+              # Private Gateway's LAN IP, proxied to the webrtc-* Services.
               candidates:
-                - 100.110.121.73:8555
+                - 192.168.1.42:8555
     persistence:
       config:
         type: configMap

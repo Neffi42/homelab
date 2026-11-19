@@ -7,11 +7,10 @@ metadata:
 spec:
   gatewayClassName: traefik
   # Not used by Traefik (exposure is its Service), read back by iac/dns for the Pi-hole records.
+  # LAN IP so LAN clients reach it too; tailnet clients go through oliver's 192.168.1.42/32 subnet route.
   addresses:
     - type: IPAddress
-      value: "100.110.121.73"
-    - type: IPAddress
-      value: "fd7a:115c:a1e0::6601:794f"
+      value: "192.168.1.42"
   # Listener ports are Traefik entrypoint container ports (see the traefik HelmRelease); they match
   # the client-facing ports here.
   # UDP (DNS, WebRTC) isn't Gateway API here: IngressRouteUDP in the apps.

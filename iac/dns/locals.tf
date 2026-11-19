@@ -23,7 +23,7 @@ locals {
     ]
   ])
 
-  # The "private" Gateway advertises oliver's Tailscale address via
+  # The "private" Gateway advertises oliver's LAN address via
   # spec.addresses — read it back instead of a static var.
   private_gateway_addresses = flatten([
     for ns, gateways in data.kubernetes_resources.gateways : [

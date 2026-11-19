@@ -8,6 +8,7 @@ on:
     inputs:
       rotate:
         description: "OAuth2 clients whose secret to regenerate (space-separated names, or 'all')"
+        type: string
         required: false
         default: ""
 

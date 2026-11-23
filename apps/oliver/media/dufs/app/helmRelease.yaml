@@ -65,7 +65,7 @@ spec:
       http:
         kind: HTTPRoute
         hostnames:
-          - "files.neffi.fr"
+          - "media.neffi.fr"
         parentRefs:
           - name: private
             namespace: network

@@ -55,7 +55,7 @@ variable "go2rtc_url" {
 variable "dufs_url" {
   description = "Url of the dufs instance to administrate"
   type        = string
-  default     = "https://files.neffi.fr/"
+  default     = "https://media.neffi.fr/"
 }
 
 variable "firefox_url" {

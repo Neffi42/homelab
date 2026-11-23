@@ -22,7 +22,7 @@ spec:
   postBuild:
     substitute:
       APP: dufs
-      OAUTH2_PROXY_HOST: files.neffi.fr
+      OAUTH2_PROXY_HOST: media.neffi.fr
       OAUTH2_PROXY_NAMESPACE: media
   prune: true
   sourceRef:

@@ -59,6 +59,9 @@ spec:
               GRAPH_USERNAME_MATCH: none
               PROXY_ROLE_ASSIGNMENT_DRIVER: oidc
               PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM: roles
+              # Admins come from Kanidm's `roles` claim: don't bootstrap the built-in `admin` account.
+              OC_ADMIN_USER_ID: ""
+              SETTINGS_SETUP_DEFAULT_ASSIGNMENTS: "false"
               # Obsidian's Nextcloud Sync plugin lists the vault with a single depth-infinity PROPFIND.
               OCDAV_ALLOW_PROPFIND_DEPTH_INFINITY: "true"
               OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "true"

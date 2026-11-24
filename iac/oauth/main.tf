@@ -129,8 +129,8 @@ resource "kanidm_oauth2_public" "opencloud" {
     "${var.opencloud_url}oidc-silent-redirect.html",
     "oc://android.opencloud.eu",
     "oc://ios.opencloud.eu",
-    "http://127.0.0.1",
-    "http://localhost",
+    "http://127.0.0.1/",
+    "http://localhost/",
   ]
 
   scope_map {

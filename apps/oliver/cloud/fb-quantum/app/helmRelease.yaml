@@ -53,6 +53,7 @@ spec:
         accessMode: ReadWriteOnce
         storageClass: local-path-oliver-ssd
         size: 200Gi
+        retain: true
         globalMounts:
           - path: /files
             subPath: files
@@ -71,15 +72,3 @@ spec:
           http:
             port: *httpPort
             protocol: TCP
-    route:
-      http:
-        kind: HTTPRoute
-        hostnames:
-          - "cloud.neffi.fr"
-        parentRefs:
-          - name: private
-            namespace: network
-        rules:
-          - backendRefs:
-              - name: fb-quantum
-                port: *httpPort

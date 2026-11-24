@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: opencloud
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: opencloud
+  interval: 1h
+  driftDetection:
+    mode: enabled
+  values:
+    defaultPodOptions:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+    controllers:
+      main:
+        annotations:
+          reloader.stakater.com/auto: "true"
+        type: statefulset
+        containers:
+          app:
+            image:
+              repository: docker.io/opencloudeu/opencloud
+              tag: 9.1.1@sha256:d7d5b547f9e41db24f030d6a6857c4184752b2c875c936952ee0601b6531cd51
+            # `init` writes /etc/opencloud/opencloud.yaml (generated secrets) on first start and fails once it exists.
+            command: ["/bin/sh", "-c", "opencloud init || true; exec opencloud server"]
+            env:
+              TZ: Europe/Paris
+              OC_URL: https://cloud.neffi.fr
+              OC_LOG_LEVEL: info
+              OC_INSECURE: "false"
+              PROXY_TLS: "false"
+              OC_TRUSTED_PROXIES: 10.42.0.0/16
+              OC_CLIENT_IP_HEADER: X-Forwarded-For
+              IDM_CREATE_DEMO_USERS: "false"
+              OC_EXCLUDE_RUN_SERVICES: idp
+              OC_ADD_RUN_SERVICES: auth-app
+              PROXY_ENABLE_APP_AUTH: "true"
+              PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud-csp/csp.yaml
+              OC_OIDC_ISSUER: https://auth.neffi.fr/oauth2/openid/opencloud
+              OC_OIDC_CLIENT_ID: opencloud
+              OC_OIDC_CLIENT_SCOPES: openid profile email offline_access
+              WEBFINGER_WEB_OIDC_CLIENT_SCOPES: openid profile email
+              PROXY_OIDC_REWRITE_WELLKNOWN: "true"
+              # Kanidm access tokens are validated through its userinfo endpoint.
+              PROXY_OIDC_ACCESS_TOKEN_VERIFY_METHOD: none
+              PROXY_AUTOPROVISION_ACCOUNTS: "true"
+              PROXY_USER_OIDC_CLAIM: preferred_username
+              PROXY_USER_CS3_CLAIM: username
+              PROXY_AUTOPROVISION_CLAIM_USERNAME: preferred_username
+              PROXY_AUTOPROVISION_CLAIM_EMAIL: email
+              PROXY_AUTOPROVISION_CLAIM_DISPLAYNAME: name
+              GRAPH_USERNAME_MATCH: none
+              PROXY_ROLE_ASSIGNMENT_DRIVER: oidc
+              PROXY_ROLE_ASSIGNMENT_OIDC_CLAIM: roles
+              # Obsidian's Nextcloud Sync plugin lists the vault with a single depth-infinity PROPFIND.
+              OCDAV_ALLOW_PROPFIND_DEPTH_INFINITY: "true"
+              OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "true"
+              FRONTEND_CHECK_FOR_UPDATES: "false"
+              WEB_OPTION_DISABLE_SPONSOR_LINK: "true"
+            probes:
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  httpGet:
+                    port: &httpPort 9200
+                    path: /status.php
+                  initialDelaySeconds: 15
+                  periodSeconds: 30
+                  timeoutSeconds: 3
+                  failureThreshold: 3
+              readiness: *probe
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+    persistence:
+      data:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        storageClass: local-path-oliver-ssd
+        size: 200Gi
+        retain: true
+        globalMounts:
+          - path: /etc/opencloud
+            subPath: config
+          - path: /var/lib/opencloud
+            subPath: data
+      csp:
+        type: configMap
+        name: opencloud-csp
+        globalMounts:
+          - path: /etc/opencloud-csp
+            readOnly: true
+    service:
+      main:
+        controller: main
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "cloud.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: opencloud
+                port: *httpPort

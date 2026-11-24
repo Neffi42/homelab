@@ -40,6 +40,12 @@ variable "continuwuity_url" {
   default     = "https://matrix.neffi.fr/"
 }
 
+variable "opencloud_url" {
+  description = "Url of the OpenCloud instance to administrate"
+  type        = string
+  default     = "https://cloud.neffi.fr/"
+}
+
 variable "jellyfin_url" {
   description = "Url of the Jellyfin instance to administrate"
   type        = string

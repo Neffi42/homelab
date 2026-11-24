@@ -104,6 +104,55 @@ resource "kanidm_group" "go2rtc_users" {
   ]
 }
 
+resource "kanidm_group" "opencloud_users" {
+  name        = "opencloud_users"
+  description = "OpenCloud users"
+
+  members = [
+    kanidm_person.neffi.id,
+    kanidm_person.cla.id,
+  ]
+}
+
+# Public: the OpenCloud desktop and mobile apps can't hold a secret and send none (PKCE only).
+# The desktop client also needs `kanidm system oauth2 enable-localhost-redirects opencloud`:
+# the provider has no attribute for it.
+resource "kanidm_oauth2_public" "opencloud" {
+  name                  = "opencloud"
+  displayname           = "OpenCloud"
+  origin                = var.opencloud_url
+  prefer_short_username = true
+
+  redirect_uris = [
+    var.opencloud_url,
+    "${var.opencloud_url}oidc-callback.html",
+    "${var.opencloud_url}oidc-silent-redirect.html",
+    "oc://android.opencloud.eu",
+    "oc://ios.opencloud.eu",
+    "http://127.0.0.1",
+    "http://localhost",
+  ]
+
+  scope_map {
+    group  = kanidm_group.opencloud_users.id
+    scopes = ["openid", "profile", "email", "offline_access"]
+  }
+
+  claim_map {
+    name   = "roles"
+    join   = "array"
+    group  = kanidm_group.app_admins.id
+    values = ["opencloudAdmin"]
+  }
+
+  claim_map {
+    name   = "roles"
+    join   = "array"
+    group  = kanidm_group.opencloud_users.id
+    values = ["opencloudUser"]
+  }
+}
+
 resource "kanidm_oauth2_basic" "fb_quantum" {
   name        = "fb_quantum"
   displayname = "FileBrowser Quantum"

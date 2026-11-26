@@ -13,7 +13,7 @@ spec:
       renovate:
         type: cronjob
         cronjob:
-          schedule: "0 8,20 * * *"
+          schedule: "0 3,6,21 * * *"
           concurrencyPolicy: Replace
           startingDeadlineSeconds: 1800
           ttlSecondsAfterFinished: 86400

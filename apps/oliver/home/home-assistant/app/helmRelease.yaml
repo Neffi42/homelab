@@ -113,7 +113,7 @@ spec:
               id_token_signing_alg: ES256
               # Kanidm's "groups" scope sends group SPNs, not short names.
               roles:
-                admin: app_admins@auth.neffi.fr
+                admin: home_users@auth.neffi.fr
                 user: home_users@auth.neffi.fr
     persistence:
       config:

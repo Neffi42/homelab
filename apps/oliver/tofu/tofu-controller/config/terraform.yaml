@@ -25,3 +25,26 @@ spec:
         # Write access to the project holding the OAuth2 client secrets.
         - secretRef:
             name: tofu-bws
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/infra.contrib.fluxcd.io/terraform_v1alpha2.json
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: jellyfin
+  namespace: tofu
+spec:
+  interval: 1h
+  path: ./apps/oliver/tofu/tofu-controller/stacks/jellyfin
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  dependsOn:
+    # Reads the jellyfin client secret the oauth stack writes to Bitwarden.
+    - name: oauth
+  backendConfig:
+    secretSuffix: jellyfin
+    inClusterConfig: true
+  varsFrom:
+    - kind: Secret
+      name: tofu-jellyfin-vars

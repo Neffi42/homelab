@@ -29,10 +29,11 @@ resource "jellyfin_plugin" "sso" {
   name           = "SSO Authentication"
   repository_url = jellyfin_plugin_repository.sso.url
 
-  # Only used at install, and a change reinstalls the plugin: the live install still records the
-  # repository URL with a trailing space.
+  # Both only matter at install, and a change reinstalls the plugin: the live install still records
+  # the repository URL with a trailing space, and with the leftover 5.0.0.0 next to 5.1.1 Jellyfin
+  # lists the plugin as either "SSO Authentication" or "SSO-Auth".
   lifecycle {
-    ignore_changes = [repository_url]
+    ignore_changes = [name, repository_url]
   }
 }
 

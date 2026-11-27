@@ -353,6 +353,27 @@ locals {
     readeck      = kanidm_oauth2_basic.readeck
     traefik      = kanidm_oauth2_basic.traefik
   }
+
+  # Bump a client's number to rotate its secret: the Kanidm provider only reads it on create,
+  # so rotating replaces the client.
+  oauth2_client_rotation = {
+    continuwuity = 1
+    dufs         = 1
+    firefox      = 1
+    flux         = 1
+    forgejo      = 1
+    go2rtc       = 1
+    jellyfin     = 1
+    miniflux     = 1
+    readeck      = 1
+    traefik      = 1
+  }
+}
+
+resource "terraform_data" "oauth2_client_rotation" {
+  for_each = local.oauth2_client_rotation
+
+  input = each.value
 }
 
 resource "bitwarden_secret" "oauth2_client_secret" {

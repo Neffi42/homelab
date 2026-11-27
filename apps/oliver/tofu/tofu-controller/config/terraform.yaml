@@ -9,6 +9,8 @@ spec:
   interval: 1h
   approvePlan: auto
   path: ./apps/oliver/tofu/tofu-controller/stacks/dns
+  # Pi-hole needs serial requests. Only reaches apply: plan has no parallelism setting.
+  parallelism: 1
   sourceRef:
     kind: GitRepository
     name: flux-system

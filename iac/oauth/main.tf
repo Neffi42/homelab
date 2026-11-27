@@ -225,6 +225,28 @@ resource "kanidm_oauth2_basic" "go2rtc" {
   }
 }
 
+# Public (PKCE only): hass-oidc-auth's recommended mode, nothing to write to Bitwarden.
+resource "kanidm_oauth2_public" "home_assistant" {
+  name                  = "home-assistant"
+  displayname           = "Home Assistant"
+  origin                = "${var.home_assistant_url}auth/oidc/welcome"
+  prefer_short_username = true
+
+  redirect_uris = [
+    "${var.home_assistant_url}auth/oidc/callback"
+  ]
+
+  scope_map {
+    group  = kanidm_group.app_admins.id
+    scopes = ["openid", "profile", "email", "groups"]
+  }
+
+  scope_map {
+    group  = kanidm_group.home_users.id
+    scopes = ["openid", "profile", "email", "groups"]
+  }
+}
+
 resource "kanidm_oauth2_basic" "dufs" {
   name        = "dufs"
   displayname = "dufs"

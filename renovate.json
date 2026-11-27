@@ -74,6 +74,16 @@
         "repository: (?<depName>docker\\.io/madnuttah/unbound)\\n\\s+tag: (?<currentValue>[^@]+)@(?<currentDigest>sha256:[a-f0-9]+)"
       ],
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "hass-oidc-auth is downloaded by Home Assistant's init container from its GitHub release",
+      "managerFilePatterns": ["/home\\/home-assistant\\/app\\/helmRelease\\.yaml$/"],
+      "matchStrings": [
+        "HASS_OIDC_AUTH_VERSION: (?<currentValue>v[^\\s]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "christiaangoossens/hass-oidc-auth"
     }
   ]
 }

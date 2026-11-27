@@ -1,0 +1,151 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bjw-s-labs/helm-charts/main/charts/other/app-template/schemas/helmrelease-helm-v2.schema.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: home-assistant
+spec:
+  chartRef:
+    kind: OCIRepository
+    name: home-assistant
+  interval: 1h
+  driftDetection:
+    mode: enabled
+  values:
+    defaultPodOptions:
+      # Pinned so kopiur's mover inherits a UID that can read the volume.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+    controllers:
+      home-assistant:
+        strategy: Recreate
+        annotations:
+          reloader.stakater.com/auto: "true"
+        initContainers:
+          # Kanidm login (auth_oidc), installed from its GitHub release before HA reads configuration.yaml.
+          hass-oidc-auth:
+            image: &image
+              repository: ghcr.io/home-operations/home-assistant
+              tag: 2026.11.3@sha256:96c244d8aa3586026bb8d4fdc0dcf9b34f348874a1ea5060942356cf181177bc
+            command: ["/bin/bash", "-euc"]
+            args:
+              - |
+                dir=/config/custom_components/auth_oidc
+                if [[ "$(jq -r .version "$${dir}/manifest.json" 2>/dev/null)" != "$${HASS_OIDC_AUTH_VERSION#v}" ]]; then
+                  curl -fsSL -o /tmp/auth_oidc.zip \
+                    "https://github.com/christiaangoossens/hass-oidc-auth/releases/download/$${HASS_OIDC_AUTH_VERSION}/hass-oidc-auth.zip"
+                  rm -rf "$${dir}" && mkdir -p "$${dir}"
+                  unzip -q /tmp/auth_oidc.zip -d "$${dir}"
+                fi
+                # configuration.yaml comes from the ConfigMap, so HA never writes its default include files.
+                cd /config
+                [[ -e automations.yaml ]] || echo "[]" > automations.yaml
+                touch scripts.yaml scenes.yaml
+            env:
+              HASS_OIDC_AUTH_VERSION: v1.3.0
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+        containers:
+          app:
+            image: *image
+            env:
+              TZ: Europe/Paris
+            probes:
+              startup:
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: &httpPort 8123
+                  periodSeconds: 10
+                  failureThreshold: 30
+              liveness: &probe
+                enabled: true
+                custom: true
+                spec:
+                  tcpSocket:
+                    port: *httpPort
+                  periodSeconds: 30
+                  timeoutSeconds: 5
+                  failureThreshold: 3
+              readiness: *probe
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop: ["ALL"]
+            resources:
+              requests:
+                cpu: 100m
+                memory: 512Mi
+              limits:
+                memory: 2Gi
+    service:
+      home-assistant:
+        controller: home-assistant
+        ports:
+          http:
+            port: *httpPort
+            protocol: TCP
+    configMaps:
+      config:
+        enabled: true
+        data:
+          configuration.yaml: |
+            default_config:
+
+            http:
+              use_x_forwarded_for: true
+              trusted_proxies:
+                - 10.42.0.0/16
+
+            automation: !include automations.yaml
+            script: !include scripts.yaml
+            scene: !include scenes.yaml
+
+            # Roles only apply when HA first creates the user.
+            auth_oidc:
+              client_id: home-assistant
+              discovery_url: https://auth.neffi.fr/oauth2/openid/home-assistant/.well-known/openid-configuration
+              display_name: Kanidm
+              id_token_signing_alg: ES256
+              # Kanidm's "groups" scope sends group SPNs, not short names.
+              roles:
+                admin: app_admins@auth.neffi.fr
+                user: home_users@auth.neffi.fr
+    persistence:
+      config:
+        type: persistentVolumeClaim
+        accessMode: ReadWriteOnce
+        storageClass: local-path-oliver-ssd
+        size: 5Gi
+        globalMounts:
+          - path: /config
+      configuration:
+        type: configMap
+        identifier: config
+        advancedMounts:
+          home-assistant:
+            app:
+              - path: /config/configuration.yaml
+                subPath: configuration.yaml
+                readOnly: true
+    route:
+      http:
+        kind: HTTPRoute
+        hostnames:
+          - "home.neffi.fr"
+        parentRefs:
+          - name: private
+            namespace: network
+        rules:
+          - backendRefs:
+              - name: home-assistant
+                port: *httpPort

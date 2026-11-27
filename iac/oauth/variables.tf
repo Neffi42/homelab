@@ -52,6 +52,12 @@ variable "go2rtc_url" {
   default     = "https://cam.neffi.fr/"
 }
 
+variable "home_assistant_url" {
+  description = "Url of the Home Assistant instance"
+  type        = string
+  default     = "https://home.neffi.fr/"
+}
+
 variable "dufs_url" {
   description = "Url of the dufs instance to administrate"
   type        = string

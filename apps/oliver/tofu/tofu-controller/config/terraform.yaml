@@ -3,28 +3,6 @@
 apiVersion: infra.contrib.fluxcd.io/v1alpha2
 kind: Terraform
 metadata:
-  name: dns
-  namespace: tofu
-spec:
-  interval: 1h
-  path: ./apps/oliver/tofu/tofu-controller/stacks/dns
-  # Pi-hole needs serial requests. Only reaches apply: plan has no parallelism setting.
-  parallelism: 1
-  sourceRef:
-    kind: GitRepository
-    name: flux-system
-    namespace: flux-system
-  backendConfig:
-    secretSuffix: dns
-    inClusterConfig: true
-  varsFrom:
-    - kind: Secret
-      name: tofu-dns-vars
----
-# yaml-language-server: $schema=https://schemas.neffi.fr/infra.contrib.fluxcd.io/terraform_v1alpha2.json
-apiVersion: infra.contrib.fluxcd.io/v1alpha2
-kind: Terraform
-metadata:
   name: oauth
   namespace: tofu
 spec:

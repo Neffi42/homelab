@@ -5,6 +5,7 @@ kind: Kustomization
 resources:
   - ./namespace.yaml
   - ./cert-manager/ks.yaml
+  - ./external-dns/ks.yaml
   - ./gateway-api/ks.yaml
   - ./pi-hole/ks.yaml
   - ./traefik/ks.yaml

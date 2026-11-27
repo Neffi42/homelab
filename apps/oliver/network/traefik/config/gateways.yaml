@@ -4,9 +4,12 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: private
+  annotations:
+    # Target of the Pi-hole records (external-dns-pihole). Traefik's status address follows its Service instead.
+    external-dns.kubernetes.io/target: "192.168.1.42"
 spec:
   gatewayClassName: traefik
-  # Not used by Traefik (exposure is its Service), read back by the tofu dns stack for the Pi-hole records.
+  # Not used by Traefik (exposure is its Service).
   # LAN IP so LAN clients reach it too; tailnet clients go through oliver's 192.168.1.42/32 subnet route.
   addresses:
     - type: IPAddress
@@ -59,6 +62,9 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: public
+  annotations:
+    # Target of the OVH records (external-dns-ovh): the WAN IP, forwarded to oliver by the router.
+    external-dns.kubernetes.io/target: "82.67.155.98"
 spec:
   gatewayClassName: traefik
   addresses:

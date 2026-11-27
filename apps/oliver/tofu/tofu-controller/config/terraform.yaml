@@ -1,0 +1,48 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/infra.contrib.fluxcd.io/terraform_v1alpha2.json
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: dns
+  namespace: tofu
+spec:
+  suspend: true
+  interval: 1h
+  path: ./apps/oliver/tofu/tofu-controller/stacks/dns
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  backendConfig:
+    secretSuffix: dns
+    inClusterConfig: true
+  varsFrom:
+    - kind: Secret
+      name: tofu-dns-vars
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/infra.contrib.fluxcd.io/terraform_v1alpha2.json
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: oauth
+  namespace: tofu
+spec:
+  suspend: true
+  interval: 1h
+  path: ./apps/oliver/tofu/tofu-controller/stacks/oauth
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  backendConfig:
+    secretSuffix: oauth
+    inClusterConfig: true
+  varsFrom:
+    - kind: Secret
+      name: tofu-oauth-vars
+  runnerPodTemplate:
+    spec:
+      envFrom:
+        # Write access to the project holding the OAuth2 client secrets.
+        - secretRef:
+            name: tofu-bws

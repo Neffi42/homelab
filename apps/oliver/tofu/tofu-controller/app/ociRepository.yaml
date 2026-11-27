@@ -1,0 +1,15 @@
+---
+# yaml-language-server: $schema=https://schemas.neffi.fr/source.toolkit.fluxcd.io/ocirepository_v1.json
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: tofu-controller
+spec:
+  interval: 1h
+  url: oci://ghcr.io/flux-iac/charts/tofu-controller
+  layerSelector:
+    mediaType: application/vnd.cncf.helm.chart.content.v1.tar+gzip
+    operation: copy
+  ref:
+    tag: "0.17.0"
+    digest: sha256:d18189aa9ef11d5134eb9198bbb350856d53e78eb23193e57de96aeab2d8795d

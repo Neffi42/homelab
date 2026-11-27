@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/fluxcd-community/flux2-schemas/refs/heads/main/helmrelease-helm-v2beta2.json
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tofu-controller
+spec:
+  interval: 10m
+  chartRef:
+    kind: OCIRepository
+    name: tofu-controller
+  install:
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    # Terraform objects live in tofu, their source is the flux-system GitRepository.
+    allowCrossNamespaceRefs: true
+    watchAllNamespaces: false
+    runner:
+      serviceAccount:
+        allowedNamespaces: []
+        # Default is a ClusterRoleBinding: runners could read every Secret in the cluster.
+        namespacedRoleBindings: true

@@ -1,0 +1,23 @@
+---
+# Flux's allow-egress policy only admits ingress from flux-system itself: the controller needs
+# source-controller for artifacts and notification-controller for events.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-tofu-controller
+  namespace: flux-system
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: ["source-controller", "notification-controller"]
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: tofu
+      ports:
+        - port: http
+          protocol: TCP

@@ -6,7 +6,8 @@ This file provides guidance to AI coding agents when working with code in this r
 
 GitOps homelab config for one Flux-managed k3s cluster (`oliver`), spanning an amd64
 control-plane node and an arm64 agent node (`raspberrypi`, tainted CI-only — see below), plus the
-OpenTofu/Terraform that provisions things Flux can't (DNS records, Kanidm OAuth2 clients/groups).
+OpenTofu that provisions things Flux can't (Kanidm OAuth2 clients/groups), applied in-cluster by
+tofu-controller.
 There is no build/compile/test step — "correctness" means valid YAML/HCL that reconciles cleanly.
 
 Git remote of record is this repo's own Forgejo instance (`code.neffi.fr`), which is itself one of
@@ -27,7 +28,9 @@ There is no linter/test runner in this repo. Validate changes by:
 - `flux build kustomization <name> --path <dir> --kustomization-file <ks.yaml> --dry-run` — the one that
   actually reflects `spec.components`/`postBuild.substitute`/`dependsOn`-aware output; required for anything
   wired through `apps/components/`, optional (but still useful) otherwise.
-- `tofu -chdir=iac/<stack> validate` — for the two OpenTofu stacks. Never `apply` locally; see below.
+- `tofu -chdir=apps/oliver/tofu/tofu-controller/stacks/<stack> init -backend=false && tofu -chdir=… validate`
+  — for the OpenTofu stacks. Never `apply` locally; see below. In the sandbox, provider plugins need an
+  unsandboxed run (go-plugin listens on a unix socket in `$TMPDIR`).
 
 YAML files carry `# yaml-language-server: $schema=...` comment headers pointing at
 `schemas.neffi.fr` (custom, for CRDs like HelmRelease/OCIRepository/ExternalSecret/Gateway) or
@@ -107,8 +110,9 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
     non-root via the pod sysctl `net.ipv4.ip_unprivileged_port_start=0`. Only the UDP entrypoints
     differ: the Service maps 53/udp→54 (`dns-udp`) and 8555/udp→8556 (`webrtc-udp`).
   - Exposure is the Traefik Service (`LoadBalancer` via k3s ServiceLB, so host ports on oliver, plus
-    `externalIPs` for the Tailscale IP). `spec.addresses` on the Gateways is ignored by Traefik; it's
-    only kept because `iac/dns` reads the `private` one.
+    `externalIPs` for the Tailscale IP). `spec.addresses` on the Gateways is ignored by Traefik, and
+    their `status.addresses` follow the Traefik Service (`statusaddress.service`), so DNS targets are
+    pinned by the `external-dns.kubernetes.io/target` annotation on each Gateway instead (see DNS below).
   - Public/private separation is per entrypoint (`https-public` vs `https-private`) plus the router
     only forwarding 4443/2222. Traefik CRD routes without `entryPoints` land on `https-private` only
     (`asDefault`).
@@ -150,7 +154,7 @@ ClusterIssuer, external-secrets' ClusterSecretStore) as two separate Flux Kustom
   toleration stays on oliver. CPU-heavy jobs don't belong on the Pi either: Renovate
   pinned a full core there and ran 4x+ longer than on oliver, so it was moved back.
 - Auth: Kanidm (`apps/oliver/auth/kanidm`) is the OIDC provider; app OAuth2 clients/groups are
-  provisioned in `iac/oauth`, not in the app's own Kustomization — adding a new OIDC-integrated
+  provisioned in the `oauth` tofu stack, not in the app's own Kustomization — adding a new OIDC-integrated
   app means adding a `kanidm_oauth2_basic` + `kanidm_group` there too.
 - Backups: kopiur (`apps/oliver/storage/kopiur`) backs up PVCs to the `hetzner-1` `ClusterRepository`
   (a Hetzner Storage Box over SFTP) — the sole backup target now; the earlier garage-on-raspberrypi
@@ -213,37 +217,54 @@ using the app's own Kanidm client (`${APP}`, secret `${APP}-oauth-credentials`, 
 CRD). The app's HTTPRoute must send `PathPrefix /oauth2/` to `${APP}-oauth2-proxy:4180` unfiltered and
 put an `ExtensionRef` filter to the Middleware on its other rules.
 
-## OpenTofu stacks (`iac/`)
+## DNS (external-dns)
 
-Two independent stacks, each with its own state, applied **only by Forgejo Actions workflows**
-in `.forgejo/workflows/` (not by hand, not by an in-cluster controller — the `terraform` namespace
-under `apps/oliver/terraform` just hosts the Kubernetes-secret state backend):
+Records are derived from HTTPRoutes by two external-dns releases in `apps/oliver/network/external-dns`
+(one per provider, both limited to `gateway-httproute` sources on one Gateway in `network`):
 
-- `iac/dns` — derives DNS records from live cluster state: reads `HTTPRoute` objects via the
-  `kubernetes_resources` data source, buckets hostnames into public (OVH zone, `A` record to the
-  WAN IP) vs private (Pi-hole) by which Gateway (`public`/`private`) they reference, plus a
-  `manual_dns_entries` var for anything not backed by an HTTPRoute. The private target IP is
-  **not** a var — it's read back from the live `Gateway` named `private` (`spec.addresses`) in the
-  current `KUBECONFIG` context, oliver's LAN IP; runs against a single cluster/context
-  now (no per-cluster fan-out).
-- `iac/oauth` — Kanidm persons/groups/OAuth2 clients (see above).
+- `external-dns-ovh` — routes on `public` → OVH zone `neffi.fr`, target from the `public` Gateway's
+  `external-dns.kubernetes.io/target` annotation (the WAN IP). TXT registry, owner `oliver`, prefix
+  `_extdns-%{record_type}.` (keeps the apex's ownership record inside the zone: `_extdns-a.neffi.fr`).
+  Records without an ownership TXT record (MX, SPF, …) are never touched. Credentials: cert-manager's
+  `network/ovh-credentials` (OAuth2 client).
+- `external-dns-pihole` — routes on `private` → Pi-hole local DNS, target `192.168.1.42` from the
+  `private` Gateway's annotation. `registry: noop` (Pi-hole can't store TXT) with `policy: sync`: every
+  `neffi.fr` A record in Pi-hole is owned by it, so a record added by hand in the Pi-hole UI gets deleted.
+  It logs in once and reuses the session; don't put anything that logs in per request (the old
+  `ryanwholey/pihole` tofu provider) back in front of Pi-hole: FTL rewrites its whole config on each
+  write, so concurrent writes lose records, and parallel logins exhaust `webserver.api.max_sessions`
+  (sessions survive a Pi-hole restart, `webserver.session.restore`).
+
+A record not backed by an HTTPRoute would need a `DNSEndpoint`: the `crd` source and its CRD, neither set up today.
+
+## OpenTofu stacks (tofu-controller)
+
+[tofu-controller](https://github.com/flux-iac/tofu-controller) (`apps/oliver/tofu/tofu-controller`,
+namespace `tofu`) applies each stack under `stacks/<name>` from a `Terraform` object in `config/`,
+using the `flux-system` GitRepository as source:
+
+- `oauth` — Kanidm persons/groups/OAuth2 clients (see above).
   Each client is also listed in `local.oauth2_basic_clients`, which writes its secret to Bitwarden
   Secrets Manager (`bitwarden_secret`, UUIDs in the `oauth2_client_secret_ids` output) for the
-  app's `ExternalSecret`. Secrets never leave CI otherwise: workflow logs and artifacts are public
-  (public repo). Rotate with `fj actions dispatch oauth.yml main -I rotate=<client…|all>`, which
-  replaces the client (the provider only reads its secret on create).
+  app's `ExternalSecret`. The Kanidm provider only reads a client secret on create, so rotating means
+  replacing the client; the `Terraform` CRD has no `-replace`, so that isn't wired up yet.
 
-Never run `tofu apply` locally — the workflows are the only writer to state:
+When it runs: a plan on every new `flux-system` revision (any commit, not just changes to the stack),
+a drift-detection plan every `spec.interval` (1h), and on `reconcile.fluxcd.io/requestedAt`.
+`approvePlan: auto` applies a plan with changes right away; without it the plan waits for
+`approvePlan: <plan id>` (`status.plan.pending`). `spec.parallelism` only reaches `apply`: plans
+always run at tofu's default parallelism, and the runner rejects `TF_CLI_ARGS_*`/`TF_VAR_*` env vars.
 
-- `oauth.yml` — `plan` + `apply` on every push to `main` touching `iac/oauth/**`, or manual dispatch.
-- `dns.yml` — same on pushes touching `iac/dns/**`, plus a daily schedule (00:00) because it reads
-  live cluster state, so route changes under `apps/` only reach DNS on the next scheduled run
-  unless dispatched (`fj actions dispatch dns.yml main`).
+Inputs: `varsFrom` Secrets filled by ExternalSecrets in `config/` (values always arrive as strings:
+use `jsondecode()` for anything structured). Only the `oauth` runner gets a Bitwarden token
+(`tofu-bws`, write access to the project holding the client secrets); other stacks get plain
+values from ESO. State: `kubernetes` backend, `tofu/tfstate-default-<secretSuffix>` (the backend
+block in each stack is overridden by the controller's `backend_override.tf`). Runners only exist in
+`tofu` (`namespacedRoleBindings: true`, so they can only read Secrets there).
 
-Changing a stack therefore means: commit, push, then check the workflow run. Secrets (Kanidm token,
-Pi-hole/OVH credentials, user mails) exist only as Forgejo Actions secrets, so local `plan` will
-lack the `TF_VAR_*` inputs anyway; `validate` is the local check. Backend is `kubernetes`
-(`secret_suffix` = stack name, `namespace = "terraform"`).
+Never run `tofu apply` locally — the controller is the only writer to state. To read a stored plan,
+use the runner's OpenTofu version (`ghcr.io/flux-iac/tf-runner` bundles it; plan files don't load
+across versions): `kubectl -n tofu get secret tfplan-default-<name> -o jsonpath='{.data.tfplan}' | base64 -d | gunzip > tfplan`.
 
 ## Renovate
 

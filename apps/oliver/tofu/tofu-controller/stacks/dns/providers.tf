@@ -18,7 +18,7 @@ terraform {
 
   backend "kubernetes" {
     secret_suffix = "dns"
-    namespace     = "terraform"
+    namespace     = "tofu"
   }
 }
 

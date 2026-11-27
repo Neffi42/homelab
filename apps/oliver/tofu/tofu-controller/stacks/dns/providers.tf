@@ -6,10 +6,6 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "3.5.0"
     }
-    pihole = {
-      source  = "ryanwholey/pihole"
-      version = "2.0.0-beta.1"
-    }
     ovh = {
       source  = "ovh/ovh"
       version = "2.24.0"
@@ -20,11 +16,6 @@ terraform {
     secret_suffix = "dns"
     namespace     = "tofu"
   }
-}
-
-provider "pihole" {
-  url      = var.pihole_url
-  password = var.pihole_password
 }
 
 provider "ovh" {

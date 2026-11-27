@@ -4,17 +4,6 @@ variable "domain" {
   default     = "neffi.fr"
 }
 
-variable "pihole_url" {
-  description = "The URL of the Pi-hole instance"
-  type        = string
-}
-
-variable "pihole_password" {
-  description = "The admin password for the Pi-hole"
-  type        = string
-  sensitive   = true
-}
-
 variable "ovh_endpoint" {
   description = "The ovh endpoint to use"
   type        = string

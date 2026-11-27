@@ -6,7 +6,6 @@ metadata:
   name: dns
   namespace: tofu
 spec:
-  suspend: true
   interval: 1h
   path: ./apps/oliver/tofu/tofu-controller/stacks/dns
   sourceRef:
@@ -27,7 +26,6 @@ metadata:
   name: oauth
   namespace: tofu
 spec:
-  suspend: true
   interval: 1h
   path: ./apps/oliver/tofu/tofu-controller/stacks/oauth
   sourceRef:

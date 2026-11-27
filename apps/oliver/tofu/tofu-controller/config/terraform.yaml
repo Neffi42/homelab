@@ -7,7 +7,6 @@ metadata:
   namespace: tofu
 spec:
   interval: 1h
-  approvePlan: auto
   path: ./apps/oliver/tofu/tofu-controller/stacks/oauth
   sourceRef:
     kind: GitRepository

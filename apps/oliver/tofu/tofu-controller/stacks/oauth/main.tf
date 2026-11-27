@@ -163,6 +163,10 @@ resource "kanidm_oauth2_basic" "forgejo" {
     group  = kanidm_group.forgejo_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["forgejo"]]
+  }
 }
 
 resource "kanidm_oauth2_basic" "continuwuity" {
@@ -182,6 +186,10 @@ resource "kanidm_oauth2_basic" "continuwuity" {
   scope_map {
     group  = kanidm_group.continuwuity_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["continuwuity"]]
   }
 }
 
@@ -203,6 +211,10 @@ resource "kanidm_oauth2_basic" "jellyfin" {
     group  = kanidm_group.jellyfin_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["jellyfin"]]
+  }
 }
 
 resource "kanidm_oauth2_basic" "go2rtc" {
@@ -222,6 +234,10 @@ resource "kanidm_oauth2_basic" "go2rtc" {
   scope_map {
     group  = kanidm_group.home_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["go2rtc"]]
   }
 }
 
@@ -260,6 +276,10 @@ resource "kanidm_oauth2_basic" "dufs" {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["dufs"]]
+  }
 }
 
 resource "kanidm_oauth2_basic" "firefox" {
@@ -274,6 +294,10 @@ resource "kanidm_oauth2_basic" "firefox" {
   scope_map {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["firefox"]]
   }
 }
 
@@ -290,6 +314,10 @@ resource "kanidm_oauth2_basic" "miniflux" {
   scope_map {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["miniflux"]]
   }
 }
 
@@ -308,6 +336,10 @@ resource "kanidm_oauth2_basic" "readeck" {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups"]
   }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["readeck"]]
+  }
 }
 
 resource "kanidm_oauth2_basic" "traefik" {
@@ -323,6 +355,10 @@ resource "kanidm_oauth2_basic" "traefik" {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["traefik"]]
+  }
 }
 
 resource "kanidm_oauth2_basic" "flux" {
@@ -337,6 +373,10 @@ resource "kanidm_oauth2_basic" "flux" {
   scope_map {
     group  = kanidm_group.app_admins.id
     scopes = ["openid", "profile", "email", "groups_name"]
+  }
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.oauth2_client_rotation["flux"]]
   }
 }
 

@@ -4,5 +4,4 @@ kind: Kustomization
 
 resources:
   - ./namespace.yaml
-  - ./fb-quantum/ks.yaml
   - ./opencloud/ks.yaml

@@ -56,15 +56,6 @@ resource "kanidm_group" "app_admins" {
   ]
 }
 
-resource "kanidm_group" "fb_quantum_users" {
-  name        = "fb_quantum_users"
-  description = "FileBrowser Quantum standard users"
-
-  members = [
-    kanidm_person.neffi.id,
-  ]
-}
-
 resource "kanidm_group" "forgejo_users" {
   name        = "forgejo_users"
   description = "Forgejo users"
@@ -150,22 +141,6 @@ resource "kanidm_oauth2_public" "opencloud" {
     join   = "array"
     group  = kanidm_group.opencloud_users.id
     values = ["opencloudUser"]
-  }
-}
-
-resource "kanidm_oauth2_basic" "fb_quantum" {
-  name        = "fb_quantum"
-  displayname = "FileBrowser Quantum"
-  origin      = var.fb_quantum_url
-
-  redirect_uris = [
-    "${var.fb_quantum_url}api/auth/oidc/callback"
-  ]
-  allow_insecure_client_disable_pkce = true
-
-  scope_map {
-    group  = kanidm_group.app_admins.id
-    scopes = ["openid", "profile", "email", "groups_name"]
   }
 }
 
@@ -347,7 +322,6 @@ locals {
   oauth2_basic_clients = {
     continuwuity = kanidm_oauth2_basic.continuwuity
     dufs         = kanidm_oauth2_basic.dufs
-    fb_quantum   = kanidm_oauth2_basic.fb_quantum
     firefox      = kanidm_oauth2_basic.firefox
     flux         = kanidm_oauth2_basic.flux
     forgejo      = kanidm_oauth2_basic.forgejo

@@ -10,12 +10,6 @@ variable "kanidm_token" {
   sensitive   = true
 }
 
-variable "fb_quantum_url" {
-  description = "Url of the FileBrowser Quantum instance to administrate"
-  type        = string
-  default     = "https://cloud.neffi.fr/"
-}
-
 variable "cla_mail" {
   description = "Cla's email"
   type        = string

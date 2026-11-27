@@ -85,11 +85,6 @@ resource "kanidm_group" "jellyfin_users" {
   ]
 }
 
-moved {
-  from = kanidm_group.go2rtc_users
-  to   = kanidm_group.home_users
-}
-
 resource "kanidm_group" "home_users" {
   name        = "home_users"
   description = "Home users (cam.neffi.fr, home.neffi.fr)"

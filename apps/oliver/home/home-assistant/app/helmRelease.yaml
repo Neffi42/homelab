@@ -111,9 +111,6 @@ spec:
               discovery_url: https://auth.neffi.fr/oauth2/openid/home-assistant/.well-known/openid-configuration
               display_name: Kanidm
               id_token_signing_alg: ES256
-              features:
-                # Temporary: attaches the Kanidm login to the onboarding owner (same username).
-                automatic_user_linking: true
               # Kanidm's "groups" scope sends group SPNs, not short names.
               roles:
                 admin: app_admins@auth.neffi.fr

@@ -403,7 +403,7 @@ locals {
     flux         = 1
     forgejo      = 1
     go2rtc       = 1
-    jellyfin     = 1
+    jellyfin     = 2
     miniflux     = 1
     readeck      = 1
     traefik      = 1

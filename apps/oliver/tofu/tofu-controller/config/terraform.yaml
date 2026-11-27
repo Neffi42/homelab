@@ -6,6 +6,7 @@ metadata:
   name: dns
   namespace: tofu
 spec:
+  suspend: true
   interval: 1h
   approvePlan: auto
   path: ./apps/oliver/tofu/tofu-controller/stacks/dns

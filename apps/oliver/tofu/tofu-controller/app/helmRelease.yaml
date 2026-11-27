@@ -15,7 +15,6 @@ spec:
   values:
     # Terraform objects live in tofu, their source is the flux-system GitRepository.
     allowCrossNamespaceRefs: true
-    watchAllNamespaces: false
     runner:
       serviceAccount:
         allowedNamespaces: []

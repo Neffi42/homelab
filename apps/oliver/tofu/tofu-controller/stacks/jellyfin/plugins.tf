@@ -51,7 +51,6 @@ resource "jellyfin_plugin_configuration" "sso" {
         Enabled                                    = true
         EnableAuthorization                        = true
         EnableAllFolders                           = false
-        EnableContentDownloading                   = null
         ApplyContentDownloadPermissionOnEveryLogin = false
         EnabledFolders                             = [jellyfin_library.movies.item_id, jellyfin_library.shows.item_id]
         AdminRoles                                 = ["app_admins"]
@@ -67,7 +66,6 @@ resource "jellyfin_plugin_configuration" "sso" {
         RoleClaim                                  = "groups"
         OidScopes                                  = ["openid", "email", "profile", "groups_name"]
         OverrideDefaultScopes                      = false
-        PortOverride                               = null
         NewPath                                    = true
         CanonicalLinks                             = { for login, id in jsondecode(var.sso_canonical_links) : login => replace(lower(id), "-", "") }
         DefaultUsernameClaim                       = "email"

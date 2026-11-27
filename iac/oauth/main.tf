@@ -85,9 +85,14 @@ resource "kanidm_group" "jellyfin_users" {
   ]
 }
 
-resource "kanidm_group" "go2rtc_users" {
-  name        = "go2rtc_users"
-  description = "Camera viewers (cam.neffi.fr)"
+moved {
+  from = kanidm_group.go2rtc_users
+  to   = kanidm_group.home_users
+}
+
+resource "kanidm_group" "home_users" {
+  name        = "home_users"
+  description = "Home users (cam.neffi.fr, home.neffi.fr)"
 
   members = [
     kanidm_person.neffi.id,
@@ -220,7 +225,7 @@ resource "kanidm_oauth2_basic" "go2rtc" {
   }
 
   scope_map {
-    group  = kanidm_group.go2rtc_users.id
+    group  = kanidm_group.home_users.id
     scopes = ["openid", "profile", "email", "groups_name"]
   }
 }

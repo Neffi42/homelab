@@ -247,7 +247,10 @@ using the `flux-system` GitRepository as source:
   Each client is also listed in `local.oauth2_basic_clients`, which writes its secret to Bitwarden
   Secrets Manager (`bitwarden_secret`, UUIDs in the `oauth2_client_secret_ids` output) for the
   app's `ExternalSecret`. The Kanidm provider only reads a client secret on create, so rotating means
-  replacing the client; the `Terraform` CRD has no `-replace`, so that isn't wired up yet.
+  replacing the client: bump the client's number in `local.oauth2_client_rotation` and push (each
+  client has `replace_triggered_by` on its `terraform_data.oauth2_client_rotation` entry). A new client
+  needs its entry and its `lifecycle` block in two separate pushes: OpenTofu also fires
+  `replace_triggered_by` when the referenced resource is created.
 
 When it runs: a plan on every new `flux-system` revision (any commit, not just changes to the stack),
 a drift-detection plan every `spec.interval` (1h), and on `reconcile.fluxcd.io/requestedAt`.
